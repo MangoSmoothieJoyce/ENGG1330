@@ -358,3 +358,94 @@ The initial playable version will include:
 - A victory screen
 
 Additional rooms, random puzzles, animations, sound effects, and advanced inventory mechanics may be considered after the core game has been completed.
+
+
+## method use
+## Engineering Lab Escape — Method List
+
+### 1. Main Game System
+
+| Method            | Function                         |
+| ----------------- | -------------------------------- |
+| `main()`          | Initialize and run the game      |
+| `handle_events()` | Handle keyboard and mouse inputs |
+| `update_game()`   | Update game states               |
+| `draw_game()`     | Render the game screen           |
+| `reset_game()`    | Restart the game                 |
+
+### 2. Map & Player Movement
+
+| Method              | Function                                   |
+| ------------------- | ------------------------------------------ |
+| `load_map()`        | Load the laboratory tile map               |
+| `draw_map()`        | Render walls, floors, and objects          |
+| `move_player()`     | Control player movement using WASD         |
+| `check_collision()` | Detect collisions with walls and furniture |
+
+### 3. Object Interaction & Inventory
+
+| Method                 | Function                              |
+| ---------------------- | ------------------------------------- |
+| `find_nearby_object()` | Detect nearby interactive objects     |
+| `interact_object()`    | Handle interactions when E is pressed |
+| `collect_clue()`       | Record discovered symbols             |
+| `add_item()`           | Add items to inventory                |
+| `show_inventory()`     | Display collected items and clues     |
+
+### 4. Puzzle 1 — Symbol Sequence
+
+| Method                    | Function                                  |
+| ------------------------- | ----------------------------------------- |
+| `start_symbol_puzzle()`   | Open the computer puzzle interface        |
+| `select_symbol()`         | Record the player's symbol selection      |
+| `check_symbol_sequence()` | Validate the selected sequence            |
+| `reveal_cabinet_code()`   | Display the code after solving the puzzle |
+
+### 5. Cabinet System
+
+| Method                 | Function                             |
+| ---------------------- | ------------------------------------ |
+| `open_keypad()`        | Display the cabinet keypad           |
+| `enter_code()`         | Handle numerical input               |
+| `check_cabinet_code()` | Validate the entered code            |
+| `unlock_cabinet()`     | Unlock the cabinet and provide items |
+
+### 6. Puzzle 2 — Power Connection
+
+| Method                     | Function                                    |
+| -------------------------- | ------------------------------------------- |
+| `start_power_puzzle()`     | Open the power connection interface         |
+| `rotate_wire()`            | Rotate a wire tile by 90°                   |
+| `check_wire_connection()`  | Validate connections between adjacent tiles |
+| `check_power_connection()` | Verify the complete power path              |
+| `unlock_exit()`            | Unlock the laboratory exit                  |
+
+### 7. Game Completion
+
+| Method                  | Function                            |
+| ----------------------- | ----------------------------------- |
+| `check_win_condition()` | Check whether the player can escape |
+| `show_victory_screen()` | Display the victory screen          |
+
+### 8. Python Built-in Functions & Pygame Methods
+
+| Built-in / Pygame API       | Usage                                  |
+| --------------------------- | -------------------------------------- |
+| `len()`                     | Check sequence or code length          |
+| `range()`                   | Iterate through map tiles              |
+| `enumerate()`               | Access tile indices and values         |
+| `all()` / `any()`           | Verify puzzle and collision conditions |
+| `pygame.init()`             | Initialize Pygame                      |
+| `pygame.display.set_mode()` | Create the game window                 |
+| `pygame.event.get()`        | Process input events                   |
+| `pygame.key.get_pressed()`  | Detect WASD movement                   |
+| `pygame.Rect()`             | Define collision boundaries            |
+| `Rect.colliderect()`        | Detect object collisions               |
+| `Rect.collidepoint()`       | Detect mouse clicks                    |
+| `pygame.image.load()`       | Load sprites and tiles                 |
+| `pygame.draw.rect()`        | Draw basic shapes                      |
+| `Surface.blit()`            | Draw images and text                   |
+| `pygame.display.flip()`     | Refresh the screen                     |
+| `pygame.time.Clock.tick()`  | Control frame rate                     |
+
+
