@@ -1,0 +1,68 @@
+{
+  "width": 20,
+  "height": 12,
+  "tile_size": 40,
+  "player_speed": 120,
+  "coordinate_system": "zero-based (column,row), x right, y down",
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    "=": "furniture",
+    "P": "spawn",
+    "A": "Workstation A",
+    "B": "Workstation B",
+    "C": "Workstation C",
+    "T": "Computer Terminal",
+    "K": "Locked Cabinet",
+    "X": "Exit Control Panel",
+    "D": "Exit Door"
+  },
+  "tiles": [
+    "####################",
+    "#........#.........#",
+    "#.....T..#.........#",
+    "#.=A=....#.=C=..K..#",
+    "#..................#",
+    "#........#.........#",
+    "#........#...===...#",
+    "#...=B=..#.........#",
+    "#........#......X..D",
+    "#.P................#",
+    "#..................#",
+    "####################"
+  ],
+  "positions": {
+    "T": {
+      "column": 6,
+      "row": 2
+    },
+    "A": {
+      "column": 3,
+      "row": 3
+    },
+    "C": {
+      "column": 12,
+      "row": 3
+    },
+    "K": {
+      "column": 16,
+      "row": 3
+    },
+    "B": {
+      "column": 5,
+      "row": 7
+    },
+    "X": {
+      "column": 16,
+      "row": 8
+    },
+    "D": {
+      "column": 19,
+      "row": 8
+    },
+    "P": {
+      "column": 2,
+      "row": 9
+    }
+  }
+}
