@@ -264,6 +264,13 @@ def draw_map(surface, lab, typefaces, *, center=None, nearby=None, exit_unlocked
     label(surface, typefaces["small"], prompt, (615, 460), GREEN if exit_unlocked else YELLOW, center=True)
 
 
+def format_stopwatch(seconds):
+    total_milliseconds = max(0, round(seconds * 1000))
+    minutes, remainder = divmod(total_milliseconds, 60_000)
+    whole_seconds, milliseconds = divmod(remainder, 1000)
+    return f"{minutes:02d}:{whole_seconds:02d}.{milliseconds:03d}"
+
+
 @dataclass
 class GameState:
     symbols_found: set = field(default_factory=set)
@@ -295,6 +302,8 @@ class Game:
     def reset(self):
         self.state = GameState()
         self.center = pygame.Vector2(self.lab.spawn)
+        self.stopwatch_started = False
+        self.stopwatch_seconds = 0.0
         self.mode = None
         self.title = ""
         self.lines = ()
@@ -436,11 +445,19 @@ class Game:
     def update(self, keys, dt):
         if not self.mode:
             direction = (keys[pygame.K_d] - keys[pygame.K_a], keys[pygame.K_s] - keys[pygame.K_w])
+            previous_center = self.center.copy()
             self.center = move_player(self.lab, self.center, direction, dt, self.state.exit_unlocked)
+            if not self.stopwatch_started and self.center != previous_center:
+                self.stopwatch_started = True
+            if self.stopwatch_started:
+                self.stopwatch_seconds += dt
 
     def draw(self, surface):
         draw_map(surface, self.lab, self.fonts, center=self.center,
                  nearby=find_nearby_object(self.lab, self.center), exit_unlocked=self.state.exit_unlocked)
+        stopwatch = (f"TIME {format_stopwatch(self.stopwatch_seconds)}"
+                     if self.stopwatch_started else "TIME --:--.---")
+        label(surface, self.fonts["small"], stopwatch, (500, 13), GREEN if self.stopwatch_started else MUTED)
         if not self.mode:
             return
 
@@ -495,6 +512,7 @@ class Game:
                 draw_button(surface, body, ACTIVATE_BUTTON, "Activate Power")
         elif self.mode == "victory":
             label(surface, body, "You successfully escaped the Engineering Laboratory!", (150, 182))
+            label(surface, body, f"Final time: {format_stopwatch(self.stopwatch_seconds)}", (150, 220), GREEN)
             draw_button(surface, body, RESTART_BUTTON, "Restart")
             draw_button(surface, body, QUIT_BUTTON, "Quit", MUTED)
 
