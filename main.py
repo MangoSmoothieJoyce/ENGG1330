@@ -1,37 +1,26 @@
-"""Engineering Lab Escape —— 新手学习版。
-
-运行：python3 main.py
-依赖：pygame（安装方法见 README_BEGINNER.md）
-
-阅读顺序：先看文件底部 main()，再看 reset_game()、handle_events()、
-update_game() 和 draw_game()。没有自定义类，也没有外部图片或音频文件。
-游戏显示英文，避免不同电脑缺少中文字体；解释与注释使用中文。
-"""
-
 import math
 import pygame
 
 
-# ==================== 1. 固定设置 ====================
-# 大写变量名表示常量：程序运行时，我们通常不会修改它们。
+
 WIDTH = 800
 HEIGHT = 480
 TILE_SIZE = 40
 FPS = 60
-PLAYER_SPEED = 120          # 单位：像素 / 秒，不是像素 / 帧
+PLAYER_SPEED = 120
 INTERACTION_DISTANCE = 58
 
-# 弹幕设置：想调整难度，先修改这几个数字即可（时间单位都是秒）。
-SAFE_DURATION = 12.0        # 安全期：可以调查、输入密码、解谜
-BARRAGE_DURATION = 8.0      # 弹幕期：只移动躲避，不能做任务
-BULLET_SPEED = 105.0        # 弹丸速度：像素 / 秒（比上一版降低 30%）
-BULLET_LIFETIME = 5.0       # 每颗弹丸最多移动 5 秒；出界也会消失
-SHOT_INTERVAL = 0.9        # 每隔 1.1 秒产生一组；比上一版更稀疏
-SPAWN_WARNING = 0.6        # 发射点先亮起 0.6 秒，避免贴脸突然命中
+
+SAFE_DURATION = 12.0
+BARRAGE_DURATION = 8.0
+BULLET_SPEED = 105.0
+BULLET_LIFETIME = 5.0
+SHOT_INTERVAL = 0.9
+SPAWN_WARNING = 0.6
 BULLET_RADIUS = 6
-HIT_PROTECTION = 1.5       # 被击中回起点后，短暂无敌
-MAX_HITS = 3              # 整局累计受击上限；第三次命中时死亡
-PHYSICS_STEP = 0.02        # 分成小步计算，防止卡顿时穿过墙或弹丸
+HIT_PROTECTION = 1.5
+MAX_HITS = 3
+PHYSICS_STEP = 0.02
 
 BACKGROUND = (20, 29, 42)
 PANEL = (29, 43, 60)
@@ -45,14 +34,14 @@ RED = (247, 132, 133)
 SYMBOLS = ["star", "circle", "triangle", "square"]
 WORKSTATION_SYMBOLS = {"A": "star", "B": "circle", "C": "triangle"}
 CORRECT_SYMBOLS = ["triangle", "star", "circle"]
-CABINET_CODE = "482"         # 用字符串保存密码，便于输入、删除和比较
+CABINET_CODE = "482"
 
-# 每块电线有两个开口。点击一次就切换到下一个方向，即顺时针转 90 度。
+
 WIRE_DIRECTIONS = [
-    ("up", "right"),         # 0: └
-    ("right", "down"),       # 1: ┌
-    ("down", "left"),        # 2: ┐
-    ("left", "up"),          # 3: ┘
+    ("up", "right"),
+    ("right", "down"),
+    ("down", "left"),
+    ("left", "up"),
 ]
 WIRE_OFFSETS = {"up": (0, -1), "right": (1, 0),
                 "down": (0, 1), "left": (-1, 0)}
@@ -72,14 +61,12 @@ SYMBOL_BUTTONS = [pygame.Rect(210 + i * 100, 215, 80, 72)
                   for i in range(4)]
 
 
-# ==================== 2. 地图与游戏数据 ====================
 def load_map():
-    """创建固定实验室。Rect 的四个参数依次是 x、y、宽、高。"""
     walls = [pygame.Rect(0, 0, WIDTH, TILE_SIZE),
              pygame.Rect(0, HEIGHT - TILE_SIZE, WIDTH, TILE_SIZE),
              pygame.Rect(0, 0, TILE_SIZE, HEIGHT),
              pygame.Rect(WIDTH - TILE_SIZE, 0, TILE_SIZE, HEIGHT)]
-    # 一个字典代表一个可互动物体；列表把所有物体放在一起。
+
     objects = [
         {"kind": "station", "name": "A", "label": "Station A",
          "rect": pygame.Rect(100, 100, 100, 50), "color": (57, 95, 113)},
@@ -100,7 +87,6 @@ def load_map():
 
 
 def reset_game():
-    """返回一份全新的状态。重开时重新调用，避免遗留旧进度。"""
     return {
         "player": pygame.Rect(388, 208, 24, 24),
         "player_x": 388.0, "player_y": 208.0,
@@ -109,7 +95,7 @@ def reset_game():
         "has_key": False, "power_connected": False,
         "exit_unlocked": False, "game_won": False, "game_over": False,
         "inventory": [],
-        "mode": "dialog",    # explore / dialog / symbols / keypad / power / ...
+        "mode": "dialog",
         "dialog_title": "Engineering Lab Escape",
         "dialog_lines": [f"Safe: {SAFE_DURATION:g} seconds to explore and solve tasks.",
                          f"Barrage: {BARRAGE_DURATION:g} seconds to dodge. Tasks are locked.",
@@ -120,7 +106,7 @@ def reset_game():
         "selected_symbols": [], "code_input": "",
         "wire_rotations": {"A": 0, "B": 1, "C": 2, "D": 3},
         "feedback": "", "feedback_ok": False,
-        # 关卡进度和弹幕进度分别保存，受击只改变位置，不清空谜题。
+
         "started": False, "phase": "safe", "phase_time": SAFE_DURATION,
         "wave": 0, "shot_timer": 0.0, "shot_index": 0,
         "bullets": [], "hits": 0, "invincible_time": 0.0,
@@ -137,7 +123,7 @@ def open_interface(game, mode):
     game["mode"] = mode
     set_feedback(game, "")
     if mode == "explore":
-        # 只有关闭开场说明后，第一轮倒计时才开始。
+
         game["started"] = True
 
 
@@ -147,12 +133,14 @@ def show_dialog(game, title, lines):
     game["dialog_lines"] = lines
 
 
-# ==================== 3. 移动、碰撞与互动 ====================
 def move_player(game, world, dx, dy):
-    """先处理横向，再处理纵向，碰到墙时仍然可以沿墙移动。"""
     player = game["player"]
-    obstacles = world["walls"] + [obj["rect"] for obj in world["objects"]]
-    # 保存小数坐标，避免每一帧取整数导致移动变慢。
+    obstacles = world["walls"].copy()
+    for obj in world["objects"]:
+         obstacles.append(obj["rect"])
+        
+    # Moving right: character stays to the left of the obstacle.
+    # Moving left: character stays to the right of the obstacle.
     game["player_x"] += dx
     player.x = round(game["player_x"])
     for obstacle in obstacles:
@@ -162,7 +150,8 @@ def move_player(game, world, dx, dy):
             elif dx < 0:
                 player.left = obstacle.right
             game["player_x"] = float(player.x)
-
+    # Moving up: character stays to the below of the obstacle.
+    # Moving down: character stays to the above of the obstacle.
     game["player_y"] += dy
     player.y = round(game["player_y"])
     for obstacle in obstacles:
@@ -175,36 +164,65 @@ def move_player(game, world, dx, dy):
 
 
 def update_player(game, world, keys, dt):
-    """打开任务窗口时人物不动，但倒计时仍由 update_game() 推进。"""
     if game["mode"] != "explore":
         return
     dx = int(keys[pygame.K_d]) - int(keys[pygame.K_a])
     dy = int(keys[pygame.K_s]) - int(keys[pygame.K_w])
     if dx != 0 and dy != 0:
-        # 不做这一步，斜着走会比直着走快约 41%。
+    # Normalize diagonal movement to ensure that the character moves at the same speed in all directions.
+    # Dividing dx and dy by sqrt(2) prevents diagonal movement from being approximately 41.4% faster than straight movement.x
         dx /= math.sqrt(2)
         dy /= math.sqrt(2)
     move_player(game, world, dx * PLAYER_SPEED * dt, dy * PLAYER_SPEED * dt)
 
 
+
 def find_nearby_object(game, world):
-    """比较玩家中心到物体边缘的距离，返回范围内最近的物体。"""
+    # Get the player's center position
     px, py = game["player"].center
+
     nearest = None
     nearest_distance = INTERACTION_DISTANCE
+
     for obj in world["objects"]:
         rect = obj["rect"]
-        closest_x = max(rect.left, min(px, rect.right))
-        closest_y = max(rect.top, min(py, rect.bottom))
-        distance = math.hypot(px - closest_x, py - closest_y)
+
+        # Find the closest X position
+        if px < rect.left:
+            closest_x = rect.left
+        elif px > rect.right:
+            closest_x = rect.right
+        else:
+            closest_x = px
+
+        # Find the closest Y position
+        if py < rect.top:
+            closest_y = rect.top
+        elif py > rect.bottom:
+            closest_y = rect.bottom
+        else:
+            closest_y = py
+
+        # Calculate the distance
+        distance_x = px - closest_x
+        distance_y = py - closest_y
+
+        distance_x_squared = distance_x ** 2
+        distance_y_squared = distance_y ** 2
+
+        distance_squared = distance_x_squared + distance_y_squared
+        distance = math.sqrt(distance_squared)
+
+        # Check if this object is closer
         if distance < nearest_distance:
             nearest = obj
             nearest_distance = distance
+
     return nearest
 
 
+
 def interact_object(game, obj):
-    """根据物体类型和当前进度，决定显示哪个界面。"""
     if game["game_over"] or game["game_won"]:
         return
     if game["phase"] == "barrage":
@@ -256,15 +274,12 @@ def interact_object(game, obj):
                          "Restore the connection at the Power panel."])
 
 
-# ==================== 3B. 弹幕与安全期循环 ====================
 def show_notice(game, message):
-    """底部显示短提示，不弹出窗口，也不会阻止玩家继续躲避。"""
     game["notice"] = message
     game["notice_time"] = 2.5
 
 
 def switch_phase(game):
-    """安全期结束就关闭任务界面；弹幕结束时清空弹丸，保证真正安全。"""
     if game["phase"] == "safe":
         game["phase"] = "barrage"
         game["phase_time"] = BARRAGE_DURATION
@@ -280,11 +295,10 @@ def switch_phase(game):
 
 
 def spawn_bullets(game):
-    """按固定顺序切换发射通道；不是随机瞄准玩家。每组各有上下左右一颗。"""
     horizontal_lanes = [180, 220, 265, 370, 410, 80]
     vertical_lanes = [80, 250, 320, 470, 550, 730]
     index = game["shot_index"]
-    # %（取余）让通道编号到末尾后重新从 0 开始。
+
     y1 = horizontal_lanes[index % len(horizontal_lanes)]
     y2 = horizontal_lanes[(index + 3) % len(horizontal_lanes)]
     x1 = vertical_lanes[(index + 1) % len(vertical_lanes)]
@@ -299,7 +313,6 @@ def spawn_bullets(game):
 
 
 def bullet_hits_player(bullet, player):
-    """圆形弹丸与矩形人物碰撞：找到矩形上离圆心最近的点。"""
     nearest_x = max(player.left, min(bullet["x"], player.right))
     nearest_y = max(player.top, min(bullet["y"], player.bottom))
     distance_squared = (bullet["x"] - nearest_x) ** 2 + (bullet["y"] - nearest_y) ** 2
@@ -307,7 +320,6 @@ def bullet_hits_player(bullet, player):
 
 
 def hit_player(game):
-    """前两次受击回起点；第三次进入失败画面，必须重新开始。"""
     if game["game_over"] or game["game_won"] or game["invincible_time"] > 0:
         return
     game["hits"] += 1
@@ -326,12 +338,11 @@ def hit_player(game):
 
 
 def update_bullets(game, dt):
-    """更新每颗弹丸；用新列表保存仍然存在的弹丸，避免边循环边删除。"""
     if game["game_over"] or game["game_won"]:
         return
     remaining_bullets = []
     for bullet in game["bullets"]:
-        # 一帧可能只有部分时间属于发射预警，其余时间才用于移动。
+
         warning_step = min(dt, bullet["warning"])
         bullet["warning"] = max(0.0, bullet["warning"] - warning_step)
         move_time = dt - warning_step
@@ -344,7 +355,7 @@ def update_bullets(game, dt):
                 and bullet_hits_player(bullet, game["player"])):
             hit_player(game)
             if game["game_over"]:
-                # 立刻停止，避免本帧后续弹丸继续命中或被重新写回列表。
+
                 return
             continue
         remaining_bullets.append(bullet)
@@ -352,10 +363,9 @@ def update_bullets(game, dt):
 
 
 def update_game(game, world, keys, dt):
-    """倒计时和物理同时更新；小步计算确保低帧率下也不跳过碰撞。"""
     if not game["started"] or game["game_won"] or game["game_over"]:
         return
-    # 不丢弃卡顿时间。例如经过 1 秒，就完整计算 1 秒的倒计时和移动。
+
     while dt > 0.000000001:
         step = min(dt, PHYSICS_STEP, game["phase_time"])
         game["notice_time"] = max(0.0, game["notice_time"] - step)
@@ -375,7 +385,6 @@ def update_game(game, world, keys, dt):
             switch_phase(game)
 
 
-# ==================== 4. 两个谜题与柜子密码 ====================
 def check_symbol_sequence(game):
     if len(game["selected_symbols"]) != 3:
         set_feedback(game, "Choose exactly three symbols first.")
@@ -403,11 +412,10 @@ def check_cabinet_code(game):
 
 
 def check_power_connection(game):
-    """逐段检查两端都有开口，不能仅凭电线看起来碰在一起。"""
     wires = {}
     for name, rotation in game["wire_rotations"].items():
         wires[name] = WIRE_DIRECTIONS[rotation]
-    # 2 × 2 布局：上排 A D，下排 B C。路线：电源 → A → B → C → D → 出口。
+
     return ("left" in wires["A"] and
             "down" in wires["A"] and "up" in wires["B"] and
             "right" in wires["B"] and "left" in wires["C"] and
@@ -424,9 +432,7 @@ def activate_power(game):
         set_feedback(game, "Connection failed. Rotate the tiles and try again.")
 
 
-# ==================== 5. 鼠标与键盘输入 ====================
 def handle_click(game, position):
-    """返回 restart / quit / None，让主循环统一处理重开和退出。"""
     mode = game["mode"]
     if mode not in ("explore", "victory", "game_over") and CLOSE_BUTTON.collidepoint(position):
         open_interface(game, "explore")
@@ -444,7 +450,7 @@ def handle_click(game, position):
     elif mode == "power" and not game["power_connected"]:
         for name, rect in WIRE_RECTS.items():
             if rect.collidepoint(position):
-                # % 4 让方向按 0 → 1 → 2 → 3 → 0 循环。
+
                 game["wire_rotations"][name] = (game["wire_rotations"][name] + 1) % 4
                 set_feedback(game, "")
         if ACTIVATE_BUTTON.collidepoint(position):
@@ -520,9 +526,7 @@ def handle_events(game, world, events):
     return None
 
 
-# ==================== 6. 绘图工具 ====================
 def draw_text(screen, fonts, text, x, y, color=TEXT, size="normal", center=False):
-    """先把文字转成图片，再画到窗口上。center=True 表示居中。"""
     image = fonts[size].render(text, True, color)
     rect = image.get_rect()
     if center:
@@ -538,7 +542,6 @@ def draw_button(screen, fonts, rect, label, color=BLUE):
 
 
 def draw_symbol(screen, symbol, center, radius=18, color=YELLOW):
-    """直接绘制图形，不依赖电脑字体是否支持 ★ 或 ▲。"""
     x, y = center
     if symbol == "circle":
         pygame.draw.circle(screen, color, center, radius)
@@ -549,7 +552,7 @@ def draw_symbol(screen, symbol, center, radius=18, color=YELLOW):
                             (x - radius, y + radius), (x + radius, y + radius)])
     elif symbol == "star":
         points = []
-        # 五角星由 5 个外顶点和 5 个内顶点交错组成。
+
         for i in range(10):
             angle = -math.pi / 2 + i * math.pi / 5
             length = radius if i % 2 == 0 else radius * 0.45
@@ -620,7 +623,7 @@ def draw_bullets(screen, game):
         x, y = round(bullet["x"]), round(bullet["y"])
         dx, dy = bullet["dx"], bullet["dy"]
         if bullet["warning"] > 0:
-            # 圆圈 + 指向场内的箭头：这段预警时间不会造成伤害。
+
             pygame.draw.circle(screen, YELLOW, (x, y), 10, 2)
             pygame.draw.line(screen, YELLOW, (x, y), (x + dx * 18, y + dy * 18), 2)
         else:
@@ -630,7 +633,6 @@ def draw_bullets(screen, game):
 
 
 def draw_phase_hud(screen, fonts, game):
-    """在所有任务窗口之后画状态栏，确保解谜时也能看到倒计时。"""
     danger = game["phase"] == "barrage"
     warning = not danger and game["phase_time"] <= 3
     color = RED if danger else (YELLOW if warning else GREEN)
@@ -699,7 +701,7 @@ def draw_inventory(screen, fonts, game):
 def draw_power_puzzle(screen, fonts, game):
     draw_text(screen, fonts, "Click a tile to rotate it 90 degrees clockwise.", 130, 113, size="small")
     wire_color = GREEN if game["power_connected"] else YELLOW
-    # 先画四个格子之间以及电源端的连接线；再画格子遮住不需要的部分。
+
     for start, end in [((235, 190), (290, 190)), ((480, 190), (535, 190)),
                        ((335, 235), (335, 245)), ((380, 290), (390, 290)),
                        ((435, 235), (435, 245))]:
@@ -787,12 +789,11 @@ def draw_game(screen, fonts, game, world):
     draw_phase_hud(screen, fonts, game)
 
 
-# ==================== 7. 程序入口与主循环 ====================
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Engineering Lab Escape - Timed Barrage Edition")
-    # None 使用 Pygame 自带字体，不要求用户准备字体文件。
+
     fonts = {"small": pygame.font.Font(None, 20),
              "normal": pygame.font.Font(None, 24),
              "title": pygame.font.Font(None, 30),
@@ -803,10 +804,10 @@ def main():
     running = True
 
     while running:
-        # tick 限制最高帧率并返回毫秒；除以 1000 变成秒。
-        # update_game 内部分小步更新，不丢弃时间，也不会大步穿墙。
+
+
         dt = clock.tick(FPS) / 1000.0
-        # 先推进时间再处理点击：安全期已经结束的这一帧，不能继续提交任务。
+
         update_game(game, world, pygame.key.get_pressed(), dt)
         action = handle_events(game, world, pygame.event.get())
         if action == "quit":
@@ -821,6 +822,5 @@ def main():
     pygame.quit()
 
 
-# 直接执行本文件时启动游戏；被测试脚本 import 时不自动打开窗口。
 if __name__ == "__main__":
     main()
