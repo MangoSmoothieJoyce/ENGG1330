@@ -3,11 +3,12 @@ import math
 import pygame
 
 
-# 1. Game settings
+# The basic setting of the game
 
 WIDTH = 800
 HEIGHT = 480
-TILE_SIZE = 40
+#the size of each tile is 40^2 pixals
+TILE_SIZE = 40 
 FPS = 60
 PLAYER_START = (388, 208)
 PLAYER_SPEED = 120
@@ -26,6 +27,7 @@ HIT_PROTECTION = 1.5
 MAX_HITS = 3
 PHYSICS_STEP = 0.02
 # Treat tiny amounts of remaining time as zero to allow for floating-point rounding.
+# sp
 TIMER_EPSILON = 1e-9
 
 BACKGROUND = (20, 29, 42)
@@ -73,7 +75,7 @@ SYMBOL_BUTTONS = [
 
 
 def main():
-    """Open the game window and keep updating the game until the player quits."""
+    # Game will keep opening until the user quits.
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Engineering Lab Escape - Timed Barrage Edition")
@@ -114,11 +116,15 @@ def main():
 
 
 def load_map():
-    """Use Rect(x, y, width, height) to place walls and devices."""
+    # This is used to create a wall
     walls = [
+        # a wall goes horizontal to the right from the left up corner.
         pygame.Rect(0, 0, WIDTH, TILE_SIZE),
+        # a wall goes horizontal to the right from the left down corner.
         pygame.Rect(0, HEIGHT - TILE_SIZE, WIDTH, TILE_SIZE),
+        # a wall goes to below vertically from the left up corner.
         pygame.Rect(0, 0, TILE_SIZE, HEIGHT),
+        # a wall goes to below vertically from the right up corner.
         pygame.Rect(WIDTH - TILE_SIZE, 0, TILE_SIZE, HEIGHT),
     ]
 
@@ -156,15 +162,13 @@ def load_map():
 
 
 def reset_game():
-    """Create a fresh game state for a new run or a restart."""
+    # initialize the game
     start_x, start_y = PLAYER_START
     return {
-        # Floating-point coordinates preserve fractional pixels. Rect uses integers for drawing and collisions.
         "player": pygame.Rect(start_x, start_y, 24, 24),
         "player_x": float(start_x),
         "player_y": float(start_y),
 
-        # Puzzle progress and inventory
         "symbols_found": {},
         "computer_solved": False,
         "cabinet_open": False,
@@ -175,7 +179,6 @@ def reset_game():
         "game_over": False,
         "inventory": [],
 
-        # mode is the open screen. phase is the current timed phase.
         "mode": "dialog",
         "dialog_title": "Engineering Lab Escape",
         "dialog_lines": [
@@ -192,7 +195,6 @@ def reset_game():
         "feedback": "",
         "feedback_ok": False,
 
-        # Phase countdown, shot timing, and hit status
         "started": False,
         "phase": "safe",
         "phase_time": SAFE_DURATION,
@@ -208,11 +210,13 @@ def reset_game():
 
 
 def set_feedback(game, message, success=False):
+    #It is use to check the correctness of the input
     game["feedback"] = message
     game["feedback_ok"] = success
 
 
 def open_interface(game, mode):
+    # Update the interface
     game["mode"] = mode
     set_feedback(game, "")
     if mode == "explore":
@@ -220,6 +224,8 @@ def open_interface(game, mode):
 
 
 def show_dialog(game, title, lines):
+    # to notice you
+    # for example, when you get something from the lab.
     open_interface(game, "dialog")
     game["dialog_title"] = title
     game["dialog_lines"] = lines
