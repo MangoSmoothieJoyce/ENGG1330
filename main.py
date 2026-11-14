@@ -99,12 +99,15 @@ def closest_point_on_rect(point_x, point_y, rect):
 
 class Game:
     def __init__(self):
-        self.player = Player(self)
+        # Player doesn't have a constructor, so it doesn't need "self" for parameter.
+        self.player = Player()
+        # Those objects are belonged to Game, but they are referencing to other, so that attributes from those objects could share.
         self.barrage = Barrage(self)
         self.puzzle = Puzzle(self)
         self.input_handler = InputHandler(self)
         self.renderer = Renderer(self)
 
+    # initialize the game
     def main(self):
         pygame.init()
         screen = pygame.display.set_mode((width, height))
@@ -119,7 +122,8 @@ class Game:
         clock = pygame.time.Clock()
         world = self.load_map()
         game = self.reset_game()
-
+        
+        # keep the game running until the player quits
         while True:
             frame_seconds = clock.tick(fps) / 1000.0
 
@@ -180,6 +184,7 @@ class Game:
         ]
         return {"walls": walls, "objects": objects}
 
+    # reset all value if player failed the game
     def reset_game(self):
         start_x, start_y = playerstart
         return {
@@ -226,36 +231,42 @@ class Game:
             "notice_time": 0.0,
         }
 
+    # show the result when player iteracted with something. For example, if player's input is correct, shows green, otherwise shows red.
     def set_feedback(self, game, message, success=False):
         game["feedback"] = message
         game["feedback_ok"] = success
 
+    # change the interface screen if needs and will also reset the old feedback.
     def open_interface(self, game, mode):
         game["mode"] = mode
         self.set_feedback(game, "")
         if mode == "explore":
             game["started"] = True
 
+    # show information
     def show_dialog(self, game, title, lines):
         self.open_interface(game, "dialog")
         game["dialog_title"] = title
         game["dialog_lines"] = lines
 
+    # when event is coming, this method will notice the player.
+    # For example, before barrage time started, it will notice "barrage will come! Please avoid them"
     def show_notice(self, game, message):
         game["notice"] = message
         game["notice_time"] = 2.5
 
     def interact_object(self, game, obj):
+        # End the game when player failed or won.
         if game["game_over"] or game["game_won"]:
             return
-
+        # lock tasks during the barrage phase and notice the player.
         if game["phase"] == "barrage":
             message = "DODGE! Tasks unlock during the next safe period."
             self.show_notice(game, message)
             return
 
         kind = obj["kind"]
-
+        #the interaction with station
         if kind == "station":
             name = obj["name"]
             symbol = workstationsymbols[name]
@@ -271,8 +282,9 @@ class Game:
             ]
             self.show_dialog(game, title, lines)
             return
-
+        #the interaction with computer
         if kind == "computer":
+            #check if player completed the task on lab-computer
             if game["computer_solved"]:
                 lines = [
                     "Cabinet access code: " + cabinetcode,
@@ -283,8 +295,9 @@ class Game:
 
             self.open_interface(game, "symbols")
             return
-
+        #the interaction with cabinet
         if kind == "cabinet":
+            # player cannot get anything from the canbinet if they have already finished the task at here.
             if game["cabinet_open"]:
                 lines = [
                     "You already collected the Exit Control Key and note.",
@@ -292,7 +305,7 @@ class Game:
                 ]
                 self.show_dialog(game, "Cabinet: open", lines)
                 return
-
+            # player must finish the task on lab-computer first.
             if not game["computer_solved"]:
                 lines = ["Keypad disabled. Complete computer verification first."]
                 self.show_dialog(game, "Cabinet: locked", lines)
@@ -301,12 +314,13 @@ class Game:
             self.open_interface(game, "keypad")
             return
 
+        # player is forbidden to interact with the power station if they don't have the key from cabinet.
         if kind == "power":
             if not game["has_key"]:
                 lines = ["Control Key required. Search the locked cabinet."]
                 self.show_dialog(game, "Access restricted", lines)
                 return
-
+            # if the power station already has power, player cannot power the station again.
             if game["power_connected"]:
                 lines = ["The exit is unlocked. Go to the door and press E."]
                 self.show_dialog(game, "Power restored", lines)
@@ -314,7 +328,7 @@ class Game:
 
             self.open_interface(game, "power")
             return
-
+        #Player win the game if the door is unlocked and he or she left the lab.
         if kind == "door":
             if game["exit_unlocked"]:
                 game["game_won"] = True
@@ -328,11 +342,13 @@ class Game:
             ]
             self.show_dialog(game, "Exit: locked", lines)
 
+    #This method don't need to return anything when the game is not running.
     def update_game(self, game, world, keys, dt):
         if not game["started"] or game["game_won"] or game["game_over"]:
             return
 
         frame_time_left = dt
+        # Using frame rate and time to determine game performance
         while frame_time_left > timerepsilon:
             step = frame_time_left
 
@@ -369,6 +385,7 @@ class Game:
             if game["phase_time"] <= timerepsilon:
                 self.switch_phase(game)
 
+    # two different game phases give different interface and notice.
     def switch_phase(self, game):
         if game["phase"] == "safe":
             game["phase"] = "barrage"
@@ -386,13 +403,14 @@ class Game:
 
 class Player:
     def update_player(self, game, world, keys, dt):
-        """Turn WASD input into movement over this time step."""
+        # player can only move if they are not doing the task.
         if game["mode"] != "explore":
             return
 
         direction_x = 0
         direction_y = 0
-    
+
+        #keyboard controll
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             direction_x = direction_x + 1
     
@@ -415,6 +433,7 @@ class Player:
 
     def move_player(self, game, world, distance_x, distance_y):
         player = game["player"]
+        # add all obstacles in lab into the list including computer, canbinet, power station, etc.
         obstacles = world["walls"].copy()
         for device in world["objects"]:
             obstacles.append(device["rect"])
@@ -424,8 +443,10 @@ class Player:
         for obstacle in obstacles:
             if not player.colliderect(obstacle):
                 continue
+            # if player is moving to the right, its right side is the left side of the obstacle.
             if distance_x > 0:
                 player.right = obstacle.left
+            # if player is moving to the left, its right side is the right side of the obstacle.
             elif distance_x < 0:
                 player.left = obstacle.right
             game["player_x"] = float(player.x)
@@ -436,8 +457,10 @@ class Player:
             if not player.colliderect(obstacle):
                 continue
             if distance_y > 0:
+                # if player is moving down, its below is the above of the obstacle.
                 player.bottom = obstacle.top
             elif distance_y < 0:
+                # if player is moving up, its below is the below of the obstacle.
                 player.top = obstacle.bottom
             game["player_y"] = float(player.y)
 
@@ -446,6 +469,7 @@ class Player:
         nearest_device = None
         nearest_distance = interactiondistance
 
+        # it is used to calculate which thing nearest to the player
         for device in world["objects"]:
             device_rect = device["rect"]
             closest_point = closest_point_on_rect(player_x, player_y, device_rect)
@@ -509,10 +533,11 @@ class Barrage:
         remaining_bullets = []
         for bullet in game["bullets"]:
             warning_time_used = dt
-        
+
+            #bullet will start to move after the warning
             if bullet["warning"] < warning_time_used:
                 warning_time_used = bullet["warning"]
-        
+            # if the moving time is 0.04, warning time is 0.02, the actual moving time will be 0.04s - 0.02s
             bullet["warning"] = bullet["warning"] - warning_time_used
             if bullet["warning"] < 0:
                 bullet["warning"] = 0.0
@@ -523,13 +548,15 @@ class Barrage:
             bullet["y"] += bullet["dy"] * bulletspeed * move_time
 
             inside_room = 40 <= bullet["x"] <= 760 and 40 <= bullet["y"] <= 440
+            #if the bullet is outside from the map or its duration less than 0, the method will not handle it anymore.
             if bullet["life"] <= 0 or not inside_room:
                 continue
 
             warning_finished = False
             if bullet["warning"] <= 0:
                 warning_finished = True
-        
+
+            # the interaction between bullet and player
             player_can_take_damage = False
             if game["invincible_time"] <= 0:
                 player_can_take_damage = True
