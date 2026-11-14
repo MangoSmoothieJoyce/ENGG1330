@@ -3,98 +3,87 @@ import random
 import pygame
 
 
-# The basic setting of the game
 
-WIDTH = 800
-HEIGHT = 480
-#the size of each tile is 40^2 pixals
-TILE_SIZE = 40 
-FPS = 60
-PLAYER_START = (388, 208)
-PLAYER_SPEED = 120
-INTERACTION_DISTANCE = 58
+width = 800
+height = 480
+tilesize = 40 
+fps = 60
+playerstart = (388, 208)
+playerspeed = 120
+interactiondistance = 58
 
 
-# Time is measured in seconds and speed in pixels per second.
-SAFE_DURATION = 12.0
-BARRAGE_DURATION = 8.0
-BULLET_SPEED = 105.0
-BULLET_LIFETIME = 5.0
-SHOT_INTERVAL = 0.9
-SPAWN_WARNING = 0.6
-BULLET_RADIUS = 6
-HIT_PROTECTION = 1.5
-MAX_HITS = 3
-PHYSICS_STEP = 0.02
-# Treat tiny amounts of remaining time as zero to allow for floating-point rounding.
-# sp
-TIMER_EPSILON = 1e-9
+safeduration = 12.0
+barrageduration = 8.0
+bulletspeed = 105.0
+bulletlifetime = 5.0
+shotinterval = 0.9
+spawnwarning = 0.6
+bulletradius = 6
+hitprotection = 1.5
+maxhits = 3
+physicsstep = 0.02
+timerepsilon = 1e-9
 
-BACKGROUND = (20, 29, 42)
-PANEL = (29, 43, 60)
-TEXT = (232, 240, 247)
-MUTED = (157, 178, 195)
-BLUE = (74, 177, 232)
-GREEN = (100, 222, 167)
-YELLOW = (249, 204, 109)
-RED = (247, 132, 133)
+background = (20, 29, 42)
+panel = (29, 43, 60)
+text = (232, 240, 247)
+muted = (157, 178, 195)
+blue = (74, 177, 232)
+green = (100, 222, 167)
+yellow = (249, 204, 109)
+red = (247, 132, 133)
 
-SYMBOLS = ["star", "circle", "triangle", "square"]
+symbols = ["star", "circle", "triangle", "square"]
 
-# Pick three different symbols.
-chosen_symbols = random.sample(SYMBOLS, 3)
+chosensymbols = random.sample(symbols, 3)
 
-# Assign one symbol to each workstation.
-WORKSTATION_SYMBOLS = {}
-WORKSTATION_SYMBOLS["A"] = chosen_symbols[0]
-WORKSTATION_SYMBOLS["B"] = chosen_symbols[1]
-WORKSTATION_SYMBOLS["C"] = chosen_symbols[2]
+workstationsymbols = {}
+workstationsymbols["A"] = chosensymbols[0]
+workstationsymbols["B"] = chosensymbols[1]
+workstationsymbols["C"] = chosensymbols[2]
 
-# Build the answer in the order C, A, B.
-CORRECT_SYMBOLS = []
-CORRECT_SYMBOLS.append(WORKSTATION_SYMBOLS["C"])
-CORRECT_SYMBOLS.append(WORKSTATION_SYMBOLS["A"])
-CORRECT_SYMBOLS.append(WORKSTATION_SYMBOLS["B"])
+correctsymbols = []
+correctsymbols.append(workstationsymbols["C"])
+correctsymbols.append(workstationsymbols["A"])
+correctsymbols.append(workstationsymbols["B"])
 
-# Generate a three-digit code and turn it into text.
-code_number = random.randint(100, 999)
-CABINET_CODE = str(code_number)
+codenumber = random.randint(100, 999)
+cabinetcode = str(codenumber)
 
 
-WIRE_DIRECTIONS = [
+wiredirections = [
     ("up", "right"),
     ("right", "down"),
     ("down", "left"),
     ("left", "up"),
 ]
-WIRE_OFFSETS = {"up": (0, -1), "right": (1, 0),
+wireoffsets = {"up": (0, -1), "right": (1, 0),
                 "down": (0, 1), "left": (-1, 0)}
-WIRE_RECTS = {
+wirerects = {
     "A": pygame.Rect(290, 145, 90, 90),
     "B": pygame.Rect(290, 245, 90, 90),
     "C": pygame.Rect(390, 245, 90, 90),
     "D": pygame.Rect(390, 145, 90, 90),
 }
-ACTIVATE_BUTTON = pygame.Rect(290, 350, 200, 38)
-CHECK_BUTTON = pygame.Rect(300, 325, 150, 40)
-CLEAR_BUTTON = pygame.Rect(470, 325, 100, 40)
-CLOSE_BUTTON = pygame.Rect(650, 65, 40, 32)
-RESTART_BUTTON = pygame.Rect(235, 295, 150, 45)
-CANCEL_BUTTON = pygame.Rect(415, 295, 150, 45)
-SYMBOL_BUTTONS = []
+activatebutton = pygame.Rect(290, 350, 200, 38)
+checkbutton = pygame.Rect(300, 325, 150, 40)
+clearbutton = pygame.Rect(470, 325, 100, 40)
+closebutton = pygame.Rect(650, 65, 40, 32)
+restartbutton = pygame.Rect(235, 295, 150, 45)
+cancelbutton = pygame.Rect(415, 295, 150, 45)
+symbolbuttons = []
 for index in range(4):
     x = 210 + index * 100
-    button_rect = pygame.Rect(x, 215, 80, 72)
-    SYMBOL_BUTTONS.append(button_rect)
+    buttonrect = pygame.Rect(x, 215, 80, 72)
+    symbolbuttons.append(buttonrect)
 
 
-# 2. Main loop: update, handle input, and draw each frame
 
 
 def main():
-    # Game will keep opening until the user quits.
     pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Engineering Lab Escape - Timed Barrage Edition")
 
     fonts = {
@@ -104,12 +93,11 @@ def main():
         "code": pygame.font.Font(None, 64),
     }
     clock = pygame.time.Clock()
-    world = load_map()   # Wall and device positions
-    game = reset_game()  # Player position, task progress, timers, and bullets
+    world = load_map()
+    game = reset_game()
 
     while True:
-        # tick() returns milliseconds. Convert to seconds for movement and timers.
-        frame_seconds = clock.tick(FPS) / 1000.0
+        frame_seconds = clock.tick(fps) / 1000.0
 
         # Use held keys to update the game, then handle individual key presses and clicks.
         held_keys = pygame.key.get_pressed()
@@ -129,20 +117,14 @@ def main():
     pygame.quit()
 
 
-# 3. Map, initial game state, and screen changes
 
 
 def load_map():
-    # This is used to create a wall
     walls = [
-        # a wall goes horizontal to the right from the left up corner.
-        pygame.Rect(0, 0, WIDTH, TILE_SIZE),
-        # a wall goes horizontal to the right from the left down corner.
-        pygame.Rect(0, HEIGHT - TILE_SIZE, WIDTH, TILE_SIZE),
-        # a wall goes to below vertically from the left up corner.
-        pygame.Rect(0, 0, TILE_SIZE, HEIGHT),
-        # a wall goes to below vertically from the right up corner.
-        pygame.Rect(WIDTH - TILE_SIZE, 0, TILE_SIZE, HEIGHT),
+        pygame.Rect(0, 0, width, tilesize),
+        pygame.Rect(0, height - tilesize, width, tilesize),
+        pygame.Rect(0, 0, tilesize, height),
+        pygame.Rect(width - tilesize, 0, tilesize, height),
     ]
 
     objects = [
@@ -179,8 +161,7 @@ def load_map():
 
 
 def reset_game():
-    # initialize the game
-    start_x, start_y = PLAYER_START
+    start_x, start_y = playerstart
     return {
         "player": pygame.Rect(start_x, start_y, 24, 24),
         "player_x": float(start_x),
@@ -199,10 +180,10 @@ def reset_game():
         "mode": "dialog",
         "dialog_title": "Engineering Lab Escape",
         "dialog_lines": [
-            f"Safe: {SAFE_DURATION:g} seconds to explore and solve tasks.",
-            f"Barrage: {BARRAGE_DURATION:g} seconds to dodge. Tasks are locked.",
+            f"Safe: {safeduration:g} seconds to explore and solve tasks.",
+            f"Barrage: {barrageduration:g} seconds to dodge. Tasks are locked.",
             "Energy bolts pass through furniture. Keep moving!",
-            f"You have {MAX_HITS} HP. At 0 HP, the run ends.",
+            f"You have {maxhits} HP. At 0 HP, the run ends.",
             "WASD: move    E: interact    I: inventory",
             "Press Enter or Esc to begin the first safe period.",
         ],
@@ -214,7 +195,7 @@ def reset_game():
 
         "started": False,
         "phase": "safe",
-        "phase_time": SAFE_DURATION,
+        "phase_time": safeduration,
         "wave": 0,
         "shot_timer": 0.0,
         "shot_index": 0,
@@ -227,13 +208,11 @@ def reset_game():
 
 
 def set_feedback(game, message, success=False):
-    #It is use to check the correctness of the input
     game["feedback"] = message
     game["feedback_ok"] = success
 
 
 def open_interface(game, mode):
-    # Update the interface
     game["mode"] = mode
     set_feedback(game, "")
     if mode == "explore":
@@ -241,8 +220,6 @@ def open_interface(game, mode):
 
 
 def show_dialog(game, title, lines):
-    # to notice you
-    # for example, when you get something from the lab.
     open_interface(game, "dialog")
     game["dialog_title"] = title
     game["dialog_lines"] = lines
@@ -253,7 +230,6 @@ def show_notice(game, message):
     game["notice_time"] = 2.5
 
 
-# 4. Player movement and device interaction
 
 
 def update_player(game, world, keys, dt):
@@ -261,7 +237,6 @@ def update_player(game, world, keys, dt):
     if game["mode"] != "explore":
         return
 
-    # int(True) is 1 and int(False) is 0. Opposite directions cancel each other out.
     direction_x = 0
     direction_y = 0
     
@@ -277,18 +252,16 @@ def update_player(game, world, keys, dt):
     if keys[pygame.K_w] or keys[pygame.K_UP]:
         direction_y = direction_y - 1
     if direction_x != 0 and direction_y != 0:
-        # Divide both directions by the square root of 2 to keep diagonal and straight speeds equal.
         diagonal_length = math.sqrt(2)
         direction_x /= diagonal_length
         direction_y /= diagonal_length
 
-    distance_x = direction_x * PLAYER_SPEED * dt
-    distance_y = direction_y * PLAYER_SPEED * dt
+    distance_x = direction_x * playerspeed * dt
+    distance_y = direction_y * playerspeed * dt
     move_player(game, world, distance_x, distance_y)
 
 
 def move_player(game, world, distance_x, distance_y):
-    """Resolve horizontal collisions first, then vertical collisions."""
     player = game["player"]
     obstacles = world["walls"].copy()
     for device in world["objects"]:
@@ -318,7 +291,6 @@ def move_player(game, world, distance_x, distance_y):
 
 
 def closest_point_on_rect(point_x, point_y, rect):
-    # Check the horizontal position.
     if point_x < rect.left:
         closest_x = rect.left
     elif point_x > rect.right:
@@ -326,7 +298,6 @@ def closest_point_on_rect(point_x, point_y, rect):
     else:
         closest_x = point_x
 
-    # Check the vertical position.
     if point_y < rect.top:
         closest_y = rect.top
     elif point_y > rect.bottom:
@@ -338,10 +309,9 @@ def closest_point_on_rect(point_x, point_y, rect):
 
 
 def find_nearby_object(game, world):
-    """Find the device closest to the player's center within interaction range."""
     player_x, player_y = game["player"].center
     nearest_device = None
-    nearest_distance = INTERACTION_DISTANCE
+    nearest_distance = interactiondistance
 
     for device in world["objects"]:
         device_rect = device["rect"]
@@ -360,11 +330,9 @@ def find_nearby_object(game, world):
 
 
 def interact_object(game, obj):
-    # Stop if the game has already ended.
     if game["game_over"] or game["game_won"]:
         return
 
-    # Tasks are locked during the barrage.
     if game["phase"] == "barrage":
         message = "DODGE! Tasks unlock during the next safe period."
         show_notice(game, message)
@@ -372,10 +340,9 @@ def interact_object(game, obj):
 
     kind = obj["kind"]
 
-    # Workstation: save and show the clue.
     if kind == "station":
         name = obj["name"]
-        symbol = WORKSTATION_SYMBOLS[name]
+        symbol = workstationsymbols[name]
 
         found_symbols = game["symbols_found"]
         found_symbols[name] = symbol
@@ -389,11 +356,10 @@ def interact_object(game, obj):
         show_dialog(game, title, lines)
         return
 
-    # Computer: show the code if solved, or open the puzzle.
     if kind == "computer":
         if game["computer_solved"]:
             lines = [
-                "Cabinet access code: " + CABINET_CODE,
+                "Cabinet access code: " + cabinetcode,
                 "The cabinet keypad is now enabled.",
             ]
             show_dialog(game, "Computer: verified", lines)
@@ -402,7 +368,6 @@ def interact_object(game, obj):
         open_interface(game, "symbols")
         return
 
-    # Cabinet: check whether the player can use the keypad.
     if kind == "cabinet":
         if game["cabinet_open"]:
             lines = [
@@ -420,7 +385,6 @@ def interact_object(game, obj):
         open_interface(game, "keypad")
         return
 
-    # Power panel: check the key and the current power status.
     if kind == "power":
         if not game["has_key"]:
             lines = ["Control Key required. Search the locked cabinet."]
@@ -435,7 +399,6 @@ def interact_object(game, obj):
         open_interface(game, "power")
         return
 
-    # Exit: end the game if the door is unlocked.
     if kind == "door":
         if game["exit_unlocked"]:
             game["game_won"] = True
@@ -451,26 +414,19 @@ def interact_object(game, obj):
 
 
 def update_game(game, world, keys, dt):
-    """Advance the game by dt, the number of seconds elapsed this frame."""
     if not game["started"] or game["game_won"] or game["game_over"]:
         return
 
     frame_time_left = dt
-    while frame_time_left > TIMER_EPSILON:
-        # Take a step of at most 0.02 seconds and stop at the end of the current phase.
-        # If the frame crosses into the next phase, handle its remaining time on the next loop iteration.
-                # Start with the time left in this frame.
+    while frame_time_left > timerepsilon:
         step = frame_time_left
 
-        # Limit the step to the physics update size.
-        if step > PHYSICS_STEP:
-            step = PHYSICS_STEP
+        if step > physicsstep:
+            step = physicsstep
 
-        # Stop at the end of the current phase.
         if step > game["phase_time"]:
             step = game["phase_time"]
 
-        # Count down the notice and protection timers.
         game["notice_time"] -= step
         if game["notice_time"] < 0:
             game["notice_time"] = 0.0
@@ -481,11 +437,10 @@ def update_game(game, world, keys, dt):
 
         update_player(game, world, keys, step)
 
-        # Spawn and move bullets during the barrage phase.
         if game["phase"] == "barrage":
-            if game["shot_timer"] <= TIMER_EPSILON:
+            if game["shot_timer"] <= timerepsilon:
                 spawn_bullets(game)
-                game["shot_timer"] += SHOT_INTERVAL
+                game["shot_timer"] += shotinterval
 
             game["shot_timer"] -= step
             update_bullets(game, step)
@@ -493,53 +448,45 @@ def update_game(game, world, keys, dt):
             if game["game_over"]:
                 return
 
-        # Subtract the time used by this step.
         game["phase_time"] -= step
         frame_time_left -= step
 
-        if game["phase_time"] <= TIMER_EPSILON:
+        if game["phase_time"] <= timerepsilon:
             switch_phase(game)
 
 
 def switch_phase(game):
-    """Switch between the safe and barrage phases and update the game state."""
     if game["phase"] == "safe":
         game["phase"] = "barrage"
-        game["phase_time"] = BARRAGE_DURATION
+        game["phase_time"] = barrageduration
         game["wave"] += 1
         game["shot_timer"] = 0.0
-        # Return to the map so the player can move immediately. Selected symbols stay in game.
         open_interface(game, "explore")
         show_notice(game, "BARRAGE! Dodge with WASD. Your task progress is kept.")
     else:
         game["phase"] = "safe"
-        game["phase_time"] = SAFE_DURATION
+        game["phase_time"] = safeduration
         game["bullets"] = []
         show_notice(game, "SAFE! Use E for tasks or I to review your clues.")
 
 
 def spawn_bullets(game):
-    """Spawn one bullet from each of the four directions."""
     horizontal_lanes = [180, 220, 265, 370, 410, 80]
     vertical_lanes = [80, 250, 320, 470, 550, 730]
     shot_index = game["shot_index"]
 
-    # Use % to wrap the index and cycle through the lanes in order.
     horizontal_count = len(horizontal_lanes)
     vertical_count = len(vertical_lanes)
     
-    # Choose a lane index for each direction.
     left_index = shot_index % horizontal_count
     right_index = (shot_index + 3) % horizontal_count
     top_index = (shot_index + 1) % vertical_count
     bottom_index = (shot_index + 4) % vertical_count
     
-    # Look up the coordinate for each lane.
     from_left_y = horizontal_lanes[left_index]
     from_right_y = horizontal_lanes[right_index]
     from_top_x = vertical_lanes[top_index]
     from_bottom_x = vertical_lanes[bottom_index]
-    # Each shot stores (start x, start y, x direction, y direction).
     shots = [
         (48, from_left_y, 1, 0),
         (752, from_right_y, -1, 0),
@@ -552,8 +499,8 @@ def spawn_bullets(game):
             "y": float(start_y),
             "dx": direction_x,
             "dy": direction_y,
-            "warning": SPAWN_WARNING,
-            "life": BULLET_LIFETIME,
+            "warning": spawnwarning,
+            "life": bulletlifetime,
         }
         game["bullets"].append(bullet)
 
@@ -561,29 +508,24 @@ def spawn_bullets(game):
 
 
 def update_bullets(game, dt):
-    """Update warnings and movement, remove expired bullets, and check for hits."""
     if game["game_over"] or game["game_won"]:
         return
 
     remaining_bullets = []
     for bullet in game["bullets"]:
-        # Use as much of this step as needed for the warning. Move during the time left over.
-        # Start with the time available in this update.
         warning_time_used = dt
         
-        # Use only as much time as the warning still needs.
         if bullet["warning"] < warning_time_used:
             warning_time_used = bullet["warning"]
         
-        # Count down the warning and keep it at or above zero.
         bullet["warning"] = bullet["warning"] - warning_time_used
         if bullet["warning"] < 0:
             bullet["warning"] = 0.0
         move_time = dt - warning_time_used
 
         bullet["life"] -= move_time
-        bullet["x"] += bullet["dx"] * BULLET_SPEED * move_time
-        bullet["y"] += bullet["dy"] * BULLET_SPEED * move_time
+        bullet["x"] += bullet["dx"] * bulletspeed * move_time
+        bullet["y"] += bullet["dy"] * bulletspeed * move_time
 
         inside_room = 40 <= bullet["x"] <= 760 and 40 <= bullet["y"] <= 440
         if bullet["life"] <= 0 or not inside_room:
@@ -601,7 +543,6 @@ def update_bullets(game, dt):
                 hit_player(game)
                 if game["game_over"]:
                     return
-                # This bullet hit the player, so leave it out of the remaining bullets.
                 continue
 
         remaining_bullets.append(bullet)
@@ -610,7 +551,6 @@ def update_bullets(game, dt):
 
 
 def bullet_hits_player(bullet, player):
-    """Count a hit if the circle's center is within one radius of the nearest point on the rectangle."""
     bullet_x = bullet["x"]
     bullet_y = bullet["y"]
     closest_x, closest_y = closest_point_on_rect(bullet_x, bullet_y, player)
@@ -618,38 +558,36 @@ def bullet_hits_player(bullet, player):
     distance_x = bullet_x - closest_x
     distance_y = bullet_y - closest_y
     distance_squared = distance_x ** 2 + distance_y ** 2
-    radius_squared = BULLET_RADIUS ** 2
+    radius_squared = bulletradius ** 2
     return distance_squared <= radius_squared
 
 
 def hit_player(game):
-    """Record a hit. If the player has health left, return them to the start and grant brief protection."""
     if game["game_over"] or game["game_won"] or game["invincible_time"] > 0:
         return
     game["hits"] += 1
-    if game["hits"] >= MAX_HITS:
+    if game["hits"] >= maxhits:
         game["game_over"] = True
         game["bullets"] = []
         game["invincible_time"] = 0.0
         game["notice_time"] = 0.0
         open_interface(game, "game_over")
         return
-    start_x, start_y = PLAYER_START
-    game["player"].topleft = PLAYER_START
+    start_x, start_y = playerstart
+    game["player"].topleft = playerstart
     game["player_x"] = float(start_x)
     game["player_y"] = float(start_y)
-    game["invincible_time"] = HIT_PROTECTION
-    health = MAX_HITS - game["hits"]
+    game["invincible_time"] = hitprotection
+    health = maxhits - game["hits"]
     show_notice(game, f"HIT! {health} HP left. Back at start; brief shield on. Progress kept.")
 
 
-# 6. Puzzle validation rules
 
 
 def check_symbol_sequence(game):
     if len(game["selected_symbols"]) != 3:
         set_feedback(game, "Choose exactly three symbols first.")
-    elif game["selected_symbols"] == CORRECT_SYMBOLS:
+    elif game["selected_symbols"] == correctsymbols:
         game["computer_solved"] = True
         set_feedback(game, "Verified! Cabinet code: 482. Press Esc to return.", True)
     else:
@@ -658,7 +596,7 @@ def check_symbol_sequence(game):
 
 
 def check_cabinet_code(game):
-    if game["code_input"] != CABINET_CODE:
+    if game["code_input"] != cabinetcode:
         game["code_input"] = ""
         set_feedback(game, "Access denied. Incorrect code. Try again.")
         return
@@ -673,7 +611,6 @@ def check_cabinet_code(game):
 
 
 def check_power_connection(game):
-    """Check both ends of each wire tile along the path from the generator through A, B, C, and D to the exit."""
     required_connections = {
         "A": ("left", "down"),
         "B": ("up", "right"),
@@ -683,7 +620,7 @@ def check_power_connection(game):
 
     wires = {}
     for name, rotation in game["wire_rotations"].items():
-        wires[name] = WIRE_DIRECTIONS[rotation]
+        wires[name] = wiredirections[rotation]
 
     for name, (first_end, second_end) in required_connections.items():
         if first_end not in wires[name] or second_end not in wires[name]:
@@ -769,32 +706,32 @@ def handle_events(game, world, events):
 
 def handle_click(game, position):
     mode = game["mode"]
-    if mode not in ("explore", "victory", "game_over") and CLOSE_BUTTON.collidepoint(position):
+    if mode not in ("explore", "victory", "game_over") and closebutton.collidepoint(position):
         open_interface(game, "explore")
         return None
     if mode == "symbols" and not game["computer_solved"]:
-        for index, rect in enumerate(SYMBOL_BUTTONS):
+        for index, rect in enumerate(symbolbuttons):
             if rect.collidepoint(position) and len(game["selected_symbols"]) < 3:
-                game["selected_symbols"].append(SYMBOLS[index])
+                game["selected_symbols"].append(symbols[index])
                 set_feedback(game, "")
-        if CHECK_BUTTON.collidepoint(position):
+        if checkbutton.collidepoint(position):
             check_symbol_sequence(game)
-        elif CLEAR_BUTTON.collidepoint(position):
+        elif clearbutton.collidepoint(position):
             game["selected_symbols"] = []
             set_feedback(game, "")
     elif mode == "power" and not game["power_connected"]:
-        for name, rect in WIRE_RECTS.items():
+        for name, rect in wirerects.items():
             if rect.collidepoint(position):
                 # Each click rotates the tile 90 degrees. The index wraps from 3 to 0.
                 current_rotation = game["wire_rotations"][name]
                 game["wire_rotations"][name] = (current_rotation + 1) % 4
                 set_feedback(game, "")
-        if ACTIVATE_BUTTON.collidepoint(position):
+        if activatebutton.collidepoint(position):
             activate_power(game)
     elif mode in ("restart", "victory", "game_over"):
-        if RESTART_BUTTON.collidepoint(position):
+        if restartbutton.collidepoint(position):
             return "restart"
-        if CANCEL_BUTTON.collidepoint(position):
+        if cancelbutton.collidepoint(position):
             if mode in ("victory", "game_over"):
                 return "quit"
             open_interface(game, "explore")
@@ -820,25 +757,25 @@ def draw_game(screen, fonts, game, world):
             draw_text(screen, fonts, line, 130, 135 + index * 39)
         if game["dialog_title"].startswith("Workstation "):
             name = game["dialog_title"][-1]
-            draw_symbol(screen, WORKSTATION_SYMBOLS[name], (400, 330), 30)
+            draw_symbol(screen, workstationsymbols[name], (400, 330), 30)
     elif mode == "symbols":
         draw_text(screen, fonts, "Enter symbols in this order: C -> A -> B", 130, 120)
         for i, symbol in enumerate(game["selected_symbols"]):
             draw_symbol(screen, symbol, (330 + i * 70, 178), 16)
-        for symbol, rect in zip(SYMBOLS, SYMBOL_BUTTONS):
+        for symbol, rect in zip(symbols, symbolbuttons):
             pygame.draw.rect(screen, (47, 66, 86), rect, border_radius=7)
             draw_symbol(screen, symbol, rect.center)
         draw_text(screen, fonts, "Click three symbols. Backspace removes the last one.",
-                  160, 299, MUTED, "small")
-        draw_button(screen, fonts, CHECK_BUTTON, "Check / Enter")
-        draw_button(screen, fonts, CLEAR_BUTTON, "Clear", MUTED)
+                  160, 299, muted, "small")
+        draw_button(screen, fonts, checkbutton, "Check / Enter")
+        draw_button(screen, fonts, clearbutton, "Clear", muted)
     elif mode == "keypad":
         draw_text(screen, fonts, "Enter the three-digit code from the computer.", 130, 130)
         displayed_code = game["code_input"].ljust(3, "_")
         draw_text(screen, fonts, "  ".join(displayed_code), 400, 225,
-                  YELLOW, "code", True)
+                  yellow, "code", True)
         draw_text(screen, fonts, "0-9: type    Backspace: delete    Enter: confirm",
-                  400, 305, MUTED, "small", True)
+                  400, 305, muted, "small", True)
     elif mode == "power":
         draw_power_puzzle(screen, fonts, game)
     elif mode == "inventory":
@@ -846,35 +783,35 @@ def draw_game(screen, fonts, game, world):
     elif mode in ("restart", "victory", "game_over"):
         if mode == "victory":
             draw_text(screen, fonts, "Congratulations! You escaped the laboratory.",
-                      400, 172, GREEN, center=True)
+                      400, 172, green, center=True)
             draw_text(screen, fonts, "Both puzzles solved. All systems restored.",
-                      400, 215, MUTED, center=True)
+                      400, 215, muted, center=True)
         elif mode == "game_over":
-            draw_text(screen, fonts, f"You were hit {MAX_HITS} times. No HP remaining.",
-                      400, 165, RED, center=True)
+            draw_text(screen, fonts, f"You were hit {maxhits} times. No HP remaining.",
+                      400, 165, red, center=True)
             draw_text(screen, fonts, "Restart for a fresh attempt with full HP.",
-                      400, 207, TEXT, center=True)
+                      400, 207, text, center=True)
             draw_text(screen, fonts, "R / Enter: restart    Esc: quit",
-                      400, 247, MUTED, "small", True)
+                      400, 247, muted, "small", True)
         else:
             draw_text(screen, fonts, "Restarting clears all progress in this session.",
                       400, 175, center=True)
             draw_text(screen, fonts, "Press Enter to restart, or Esc to cancel.",
-                      400, 215, MUTED, center=True)
-        draw_button(screen, fonts, RESTART_BUTTON, "Restart")
-        draw_button(screen, fonts, CANCEL_BUTTON,
-                    "Quit" if mode in ("victory", "game_over") else "Cancel", MUTED)
+                      400, 215, muted, center=True)
+        draw_button(screen, fonts, restartbutton, "Restart")
+        draw_button(screen, fonts, cancelbutton,
+                    "Quit" if mode in ("victory", "game_over") else "Cancel", muted)
     if game["feedback"]:
-        color = GREEN if game["feedback_ok"] else RED
+        color = green if game["feedback_ok"] else red
         draw_text(screen, fonts, game["feedback"], 125, 389, color, "small")
     draw_phase_hud(screen, fonts, game)
 
 
 def draw_map(screen, fonts, game, world):
-    screen.fill(BACKGROUND)
+    screen.fill(background)
     for row in range(12):
         for column in range(20):
-            tile = pygame.Rect(column * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+            tile = pygame.Rect(column * tilesize, row * tilesize, tilesize, tilesize)
             pygame.draw.rect(screen, (28, 39, 53), tile, 1)
     for wall in world["walls"]:
         pygame.draw.rect(screen, (44, 57, 74), wall)
@@ -889,20 +826,20 @@ def draw_map(screen, fonts, game, world):
             color = (70, 117, 94)
         pygame.draw.rect(screen, color, obj["rect"], border_radius=5)
         if obj is nearby:
-            pygame.draw.rect(screen, YELLOW, obj["rect"].inflate(6, 6), 2, border_radius=5)
+            pygame.draw.rect(screen, yellow, obj["rect"].inflate(6, 6), 2, border_radius=5)
         draw_text(screen, fonts, obj["label"], *obj["rect"].center,
                   size="small", center=True)
         if obj["kind"] == "station" and obj["name"] in game["symbols_found"]:
-            draw_symbol(screen, WORKSTATION_SYMBOLS[obj["name"]],
-                        (obj["rect"].centerx, obj["rect"].top - 16), 9, GREEN)
+            draw_symbol(screen, workstationsymbols[obj["name"]],
+                        (obj["rect"].centerx, obj["rect"].top - 16), 9, green)
 
     draw_bullets(screen, game)
-    player_color = BLUE
+    player_color = blue
     if game["invincible_time"] > 0:
-        player_color = TEXT if int(game["invincible_time"] * 10) % 2 else BLUE
-        pygame.draw.circle(screen, BLUE, game["player"].center, 21, 2)
+        player_color = text if int(game["invincible_time"] * 10) % 2 else blue
+        pygame.draw.circle(screen, blue, game["player"].center, 21, 2)
     pygame.draw.rect(screen, player_color, game["player"], border_radius=6)
-    pygame.draw.circle(screen, TEXT, (game["player"].centerx, game["player"].y + 7), 4)
+    pygame.draw.circle(screen, text, (game["player"].centerx, game["player"].y + 7), 4)
     message = current_objective(game)
     if game["phase"] == "barrage":
         message = "WASD: dodge    Tasks locked    Energy bolts pass through furniture."
@@ -914,8 +851,8 @@ def draw_map(screen, fonts, game, world):
         px = max(100, min(700, game["player"].centerx))
         py = max(62, game["player"].top - 22)
         label_rect = pygame.Rect(px - 98, py - 13, 196, 26)
-        pygame.draw.rect(screen, PANEL, label_rect, border_radius=5)
-        draw_text(screen, fonts, prompt, px, py, YELLOW, "small", True)
+        pygame.draw.rect(screen, panel, label_rect, border_radius=5)
+        draw_text(screen, fonts, prompt, px, py, yellow, "small", True)
 
 
 def draw_bullets(screen, game):
@@ -923,18 +860,18 @@ def draw_bullets(screen, game):
         x, y = round(bullet["x"]), round(bullet["y"])
         dx, dy = bullet["dx"], bullet["dy"]
         if bullet["warning"] > 0:
-            pygame.draw.circle(screen, YELLOW, (x, y), 10, 2)
-            pygame.draw.line(screen, YELLOW, (x, y), (x + dx * 18, y + dy * 18), 2)
+            pygame.draw.circle(screen, yellow, (x, y), 10, 2)
+            pygame.draw.line(screen, yellow, (x, y), (x + dx * 18, y + dy * 18), 2)
         else:
-            pygame.draw.line(screen, RED, (x - dx * 15, y - dy * 15), (x, y), 3)
-            pygame.draw.circle(screen, RED, (x, y), BULLET_RADIUS)
-            pygame.draw.circle(screen, TEXT, (x + dx * 2, y + dy * 2), 2)
+            pygame.draw.line(screen, red, (x - dx * 15, y - dy * 15), (x, y), 3)
+            pygame.draw.circle(screen, red, (x, y), bulletradius)
+            pygame.draw.circle(screen, text, (x + dx * 2, y + dy * 2), 2)
 
 
 def draw_phase_hud(screen, fonts, game):
     danger = game["phase"] == "barrage"
     warning = not danger and game["phase_time"] <= 3
-    color = RED if danger else (YELLOW if warning else GREEN)
+    color = red if danger else (yellow if warning else green)
     label = "DODGE / TASKS LOCKED" if danger else "SAFE / DO TASKS"
     if warning:
         label = "BARRAGE INCOMING"
@@ -942,84 +879,84 @@ def draw_phase_hud(screen, fonts, game):
         label = "READY / READ INSTRUCTIONS"
     if game["game_won"]:
         label = "ESCAPED / TIMER STOPPED"
-        color = GREEN
+        color = green
     elif game["game_over"]:
         label = "GAME OVER / TIMER STOPPED"
-        color = RED
-    pygame.draw.rect(screen, PANEL, (0, 0, WIDTH, 40))
+        color = red
+    pygame.draw.rect(screen, panel, (0, 0, width, 40))
     seconds = f'{game["phase_time"]:.1f}s'
     draw_text(screen, fonts, label, 16, 8, color, "small")
     draw_text(screen, fonts, seconds, 278, 7, color)
-    health = max(0, MAX_HITS - game["hits"])
-    health_color = RED if health <= 1 else TEXT
-    draw_text(screen, fonts, f'Wave {game["wave"]}   HP {health}/{MAX_HITS}',
+    health = max(0, maxhits - game["hits"])
+    health_color = red if health <= 1 else text
+    draw_text(screen, fonts, f'Wave {game["wave"]}   HP {health}/{maxhits}',
               365, 8, health_color, "small")
-    draw_text(screen, fonts, "WASD Move   E Task   I Bag   R Restart", 535, 8, MUTED, "small")
-    duration = BARRAGE_DURATION if danger else SAFE_DURATION
-    bar_width = round(WIDTH * max(0, min(1, game["phase_time"] / duration)))
+    draw_text(screen, fonts, "WASD Move   E Task   I Bag   R Restart", 535, 8, muted, "small")
+    duration = barrageduration if danger else safeduration
+    bar_width = round(width * max(0, min(1, game["phase_time"] / duration)))
     pygame.draw.rect(screen, color, (0, 34, bar_width, 6))
     if danger:
-        pygame.draw.rect(screen, RED, (40, 40, 720, 400), 2)
+        pygame.draw.rect(screen, red, (40, 40, 720, 400), 2)
     elif warning and int(game["phase_time"] * 4) % 2:
-        pygame.draw.rect(screen, YELLOW, (40, 40, 720, 400), 2)
+        pygame.draw.rect(screen, yellow, (40, 40, 720, 400), 2)
 
 
 def draw_window(screen, fonts, title, closable=True):
-    shade = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+    shade = pygame.Surface((width, height), pygame.SRCALPHA)
     shade.fill((0, 0, 0, 175))
     screen.blit(shade, (0, 0))
-    pygame.draw.rect(screen, PANEL, (100, 50, 600, 380), border_radius=12)
+    pygame.draw.rect(screen, panel, (100, 50, 600, 380), border_radius=12)
     pygame.draw.rect(screen, (65, 88, 110), (100, 50, 600, 380), 2, border_radius=12)
     draw_text(screen, fonts, title, 125, 71, size="title")
     if closable:
-        draw_button(screen, fonts, CLOSE_BUTTON, "X", MUTED)
+        draw_button(screen, fonts, closebutton, "X", muted)
     draw_text(screen, fonts, "Esc: close" if closable else "R: restart    Esc: quit",
-              125, 405, MUTED, "small")
+              125, 405, muted, "small")
 
 
 def draw_inventory(screen, fonts, game):
-    draw_text(screen, fonts, "RECORDED CLUES", 130, 122, BLUE)
+    draw_text(screen, fonts, "RECORDED CLUES", 130, 122, blue)
     for index, name in enumerate(["A", "B", "C"]):
         x = 180 + index * 185
         draw_text(screen, fonts, "Station " + name, x, 163, center=True)
         if name in game["symbols_found"]:
             draw_symbol(screen, game["symbols_found"][name], (x, 199), 17)
         else:
-            draw_text(screen, fonts, "?", x, 199, MUTED, center=True)
-    code = CABINET_CODE if game["computer_solved"] else "not discovered"
+            draw_text(screen, fonts, "?", x, 199, muted, center=True)
+    code = cabinetcode if game["computer_solved"] else "not discovered"
     draw_text(screen, fonts, "Cabinet code: " + code, 130, 242)
     items = ", ".join(game["inventory"]) if game["inventory"] else "None yet"
     draw_text(screen, fonts, "Items: " + items, 130, 277, size="small")
     if game["has_key"]:
         draw_text(screen, fonts, "NOTE: Rotate wires to connect generator to exit.",
-                  130, 317, YELLOW, "small")
+                  130, 317, yellow, "small")
         draw_text(screen, fonts, "Items are used automatically; no need to equip them.",
-                  130, 348, MUTED, "small")
+                  130, 348, muted, "small")
 
 
 def draw_power_puzzle(screen, fonts, game):
     draw_text(screen, fonts, "Click a tile to rotate it 90 degrees clockwise.", 130, 113, size="small")
-    wire_color = GREEN if game["power_connected"] else YELLOW
+    wire_color = green if game["power_connected"] else yellow
 
     for start, end in [((235, 190), (290, 190)), ((480, 190), (535, 190)),
                        ((335, 235), (335, 245)), ((380, 290), (390, 290)),
                        ((435, 235), (435, 245))]:
         pygame.draw.line(screen, wire_color, start, end, 6)
-    draw_text(screen, fonts, "GENERATOR", 215, 167, GREEN, "small", True)
-    draw_text(screen, fonts, "EXIT", 555, 167, GREEN, "small", True)
-    for name, rect in WIRE_RECTS.items():
+    draw_text(screen, fonts, "GENERATOR", 215, 167, green, "small", True)
+    draw_text(screen, fonts, "EXIT", 555, 167, green, "small", True)
+    for name, rect in wirerects.items():
         pygame.draw.rect(screen, (47, 66, 86), rect, border_radius=7)
         pygame.draw.rect(screen, (87, 111, 131), rect, 1, border_radius=7)
         cx, cy = rect.center
-        directions = WIRE_DIRECTIONS[game["wire_rotations"][name]]
+        directions = wiredirections[game["wire_rotations"][name]]
         for direction in directions:
-            dx, dy = WIRE_OFFSETS[direction]
+            dx, dy = wireoffsets[direction]
             pygame.draw.line(screen, wire_color, (cx, cy), (cx + dx * 45, cy + dy * 45), 7)
         pygame.draw.circle(screen, wire_color, (cx, cy), 6)
-        draw_text(screen, fonts, name, rect.x + 7, rect.y + 5, TEXT, "small")
-    draw_button(screen, fonts, ACTIVATE_BUTTON,
+        draw_text(screen, fonts, name, rect.x + 7, rect.y + 5, text, "small")
+    draw_button(screen, fonts, activatebutton,
                 "Power Restored" if game["power_connected"] else "Activate Power",
-                GREEN if game["power_connected"] else BLUE)
+                green if game["power_connected"] else blue)
 
 
 def current_objective(game):
@@ -1032,7 +969,7 @@ def current_objective(game):
     return "Inspect stations A, B and C, then use the computer."
 
 
-def draw_text(screen, fonts, text, x, y, color=TEXT, size="normal", center=False):
+def draw_text(screen, fonts, text, x, y, color=text, size="normal", center=False):
     image = fonts[size].render(text, True, color)
     rect = image.get_rect()
     if center:
@@ -1042,12 +979,12 @@ def draw_text(screen, fonts, text, x, y, color=TEXT, size="normal", center=False
     screen.blit(image, rect)
 
 
-def draw_button(screen, fonts, rect, label, color=BLUE):
+def draw_button(screen, fonts, rect, label, color=blue):
     pygame.draw.rect(screen, color, rect, border_radius=7)
-    draw_text(screen, fonts, label, *rect.center, color=BACKGROUND, center=True)
+    draw_text(screen, fonts, label, *rect.center, color=background, center=True)
 
 
-def draw_symbol(screen, symbol, center, radius=18, color=YELLOW):
+def draw_symbol(screen, symbol, center, radius=18, color=yellow):
     x, y = center
     if symbol == "circle":
         pygame.draw.circle(screen, color, center, radius)
