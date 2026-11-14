@@ -99,7 +99,7 @@ def closest_point_on_rect(point_x, point_y, rect):
 
 class Game:
     def __init__(self):
-        self.player = Player()
+        self.player = Player(self)
         self.barrage = Barrage(self)
         self.puzzle = Puzzle(self)
         self.input_handler = InputHandler(self)
