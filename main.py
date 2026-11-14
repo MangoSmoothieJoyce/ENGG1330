@@ -40,9 +40,25 @@ YELLOW = (249, 204, 109)
 RED = (247, 132, 133)
 
 SYMBOLS = ["star", "circle", "triangle", "square"]
-WORKSTATION_SYMBOLS = {"A": "star", "B": "circle", "C": "triangle"}
-CORRECT_SYMBOLS = ["triangle", "star", "circle"]
-CABINET_CODE = "482"
+
+# Pick three different symbols.
+chosen_symbols = random.sample(SYMBOLS, 3)
+
+# Assign one symbol to each workstation.
+WORKSTATION_SYMBOLS = {}
+WORKSTATION_SYMBOLS["A"] = chosen_symbols[0]
+WORKSTATION_SYMBOLS["B"] = chosen_symbols[1]
+WORKSTATION_SYMBOLS["C"] = chosen_symbols[2]
+
+# Build the answer in the order C, A, B.
+CORRECT_SYMBOLS = []
+CORRECT_SYMBOLS.append(WORKSTATION_SYMBOLS["C"])
+CORRECT_SYMBOLS.append(WORKSTATION_SYMBOLS["A"])
+CORRECT_SYMBOLS.append(WORKSTATION_SYMBOLS["B"])
+
+# Generate a three-digit code and turn it into text.
+code_number = random.randint(100, 999)
+CABINET_CODE = str(code_number)
 
 
 WIRE_DIRECTIONS = [
@@ -65,10 +81,11 @@ CLEAR_BUTTON = pygame.Rect(470, 325, 100, 40)
 CLOSE_BUTTON = pygame.Rect(650, 65, 40, 32)
 RESTART_BUTTON = pygame.Rect(235, 295, 150, 45)
 CANCEL_BUTTON = pygame.Rect(415, 295, 150, 45)
-SYMBOL_BUTTONS = [
-    pygame.Rect(210 + index * 100, 215, 80, 72)
-    for index in range(4)
-]
+SYMBOL_BUTTONS = []
+for index in range(4):
+    x = 210 + index * 100
+    button_rect = pygame.Rect(x, 215, 80, 72)
+    SYMBOL_BUTTONS.append(button_rect)
 
 
 # 2. Main loop: update, handle input, and draw each frame
@@ -245,8 +262,20 @@ def update_player(game, world, keys, dt):
         return
 
     # int(True) is 1 and int(False) is 0. Opposite directions cancel each other out.
-    direction_x = int(keys[pygame.K_d]) - int(keys[pygame.K_a])
-    direction_y = int(keys[pygame.K_s]) - int(keys[pygame.K_w])
+    direction_x = 0
+    direction_y = 0
+    
+    if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+        direction_x = direction_x + 1
+    
+    if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+        direction_x = direction_x - 1
+    
+    if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+        direction_y = direction_y + 1
+    
+    if keys[pygame.K_w] or keys[pygame.K_UP]:
+        direction_y = direction_y - 1
     if direction_x != 0 and direction_y != 0:
         # Divide both directions by the square root of 2 to keep diagonal and straight speeds equal.
         diagonal_length = math.sqrt(2)
@@ -289,14 +318,22 @@ def move_player(game, world, distance_x, distance_y):
 
 
 def closest_point_on_rect(point_x, point_y, rect):
-    """Limit the point's x and y coordinates to the rectangle's bounds."""
-    # Use the nearest edge if x is outside the rectangle. Otherwise, keep x.
-    closest_x = min(point_x, rect.right)
-    closest_x = max(rect.left, closest_x)
+    # Check the horizontal position.
+    if point_x < rect.left:
+        closest_x = rect.left
+    elif point_x > rect.right:
+        closest_x = rect.right
+    else:
+        closest_x = point_x
 
-    # Do the same for y. In Pygame, y increases downward.
-    closest_y = min(point_y, rect.bottom)
-    closest_y = max(rect.top, closest_y)
+    # Check the vertical position.
+    if point_y < rect.top:
+        closest_y = rect.top
+    elif point_y > rect.bottom:
+        closest_y = rect.bottom
+    else:
+        closest_y = point_y
+
     return closest_x, closest_y
 
 
@@ -307,7 +344,10 @@ def find_nearby_object(game, world):
     nearest_distance = INTERACTION_DISTANCE
 
     for device in world["objects"]:
-        closest_x, closest_y = closest_point_on_rect(player_x, player_y, device["rect"])
+        device_rect = device["rect"]
+        closest_point = closest_point_on_rect(player_x, player_y, device_rect)
+        closest_x = closest_point[0]
+        closest_y = closest_point[1]
         distance_x = player_x - closest_x
         distance_y = player_y - closest_y
         distance = math.sqrt(distance_x ** 2 + distance_y ** 2)
@@ -320,58 +360,94 @@ def find_nearby_object(game, world):
 
 
 def interact_object(game, obj):
+    # Stop if the game has already ended.
     if game["game_over"] or game["game_won"]:
         return
+
+    # Tasks are locked during the barrage.
     if game["phase"] == "barrage":
-        show_notice(game, "DODGE! Tasks unlock during the next safe period.")
+        message = "DODGE! Tasks unlock during the next safe period."
+        show_notice(game, message)
         return
+
     kind = obj["kind"]
+
+    # Workstation: save and show the clue.
     if kind == "station":
         name = obj["name"]
         symbol = WORKSTATION_SYMBOLS[name]
-        game["symbols_found"][name] = symbol
-        show_dialog(game, "Workstation " + name,
-                    ["The label shows: " + symbol.upper(),
-                     "This clue has been recorded in your inventory.",
-                     "Close this window, then press I to review clues."])
-    elif kind == "computer":
+
+        found_symbols = game["symbols_found"]
+        found_symbols[name] = symbol
+
+        title = "Workstation " + name
+        lines = [
+            "The label shows: " + symbol.upper(),
+            "This clue has been recorded in your inventory.",
+            "Close this window, then press I to review clues.",
+        ]
+        show_dialog(game, title, lines)
+        return
+
+    # Computer: show the code if solved, or open the puzzle.
+    if kind == "computer":
         if game["computer_solved"]:
-            show_dialog(game, "Computer: verified",
-                        ["Cabinet access code: " + CABINET_CODE,
-                         "The cabinet keypad is now enabled."])
-        else:
-            open_interface(game, "symbols")
-    elif kind == "cabinet":
+            lines = [
+                "Cabinet access code: " + CABINET_CODE,
+                "The cabinet keypad is now enabled.",
+            ]
+            show_dialog(game, "Computer: verified", lines)
+            return
+
+        open_interface(game, "symbols")
+        return
+
+    # Cabinet: check whether the player can use the keypad.
+    if kind == "cabinet":
         if game["cabinet_open"]:
-            show_dialog(game, "Cabinet: open",
-                        ["You already collected the Exit Control Key and note.",
-                         "Use the key at the Power panel."])
-        elif not game["computer_solved"]:
-            show_dialog(game, "Cabinet: locked",
-                        ["Keypad disabled. Complete computer verification first."])
-        else:
-            open_interface(game, "keypad")
-    elif kind == "power":
+            lines = [
+                "You already collected the Exit Control Key and note.",
+                "Use the key at the Power panel.",
+            ]
+            show_dialog(game, "Cabinet: open", lines)
+            return
+
+        if not game["computer_solved"]:
+            lines = ["Keypad disabled. Complete computer verification first."]
+            show_dialog(game, "Cabinet: locked", lines)
+            return
+
+        open_interface(game, "keypad")
+        return
+
+    # Power panel: check the key and the current power status.
+    if kind == "power":
         if not game["has_key"]:
-            show_dialog(game, "Access restricted",
-                        ["Control Key required. Search the locked cabinet."])
-        elif game["power_connected"]:
-            show_dialog(game, "Power restored",
-                        ["The exit is unlocked. Go to the door and press E."])
-        else:
-            open_interface(game, "power")
-    elif kind == "door":
+            lines = ["Control Key required. Search the locked cabinet."]
+            show_dialog(game, "Access restricted", lines)
+            return
+
+        if game["power_connected"]:
+            lines = ["The exit is unlocked. Go to the door and press E."]
+            show_dialog(game, "Power restored", lines)
+            return
+
+        open_interface(game, "power")
+        return
+
+    # Exit: end the game if the door is unlocked.
+    if kind == "door":
         if game["exit_unlocked"]:
             game["game_won"] = True
             game["bullets"] = []
             open_interface(game, "victory")
-        else:
-            show_dialog(game, "Exit: locked",
-                        ["The electronic lock has no power.",
-                         "Restore the connection at the Power panel."])
+            return
 
-
-# 5. Demo: phase changes, bullet patterns, and hits
+        lines = [
+            "The electronic lock has no power.",
+            "Restore the connection at the Power panel.",
+        ]
+        show_dialog(game, "Exit: locked", lines)
 
 
 def update_game(game, world, keys, dt):
@@ -383,23 +459,44 @@ def update_game(game, world, keys, dt):
     while frame_time_left > TIMER_EPSILON:
         # Take a step of at most 0.02 seconds and stop at the end of the current phase.
         # If the frame crosses into the next phase, handle its remaining time on the next loop iteration.
-        step = min(frame_time_left, PHYSICS_STEP, game["phase_time"])
-        game["notice_time"] = max(0.0, game["notice_time"] - step)
-        game["invincible_time"] = max(0.0, game["invincible_time"] - step)
+                # Start with the time left in this frame.
+        step = frame_time_left
+
+        # Limit the step to the physics update size.
+        if step > PHYSICS_STEP:
+            step = PHYSICS_STEP
+
+        # Stop at the end of the current phase.
+        if step > game["phase_time"]:
+            step = game["phase_time"]
+
+        # Count down the notice and protection timers.
+        game["notice_time"] -= step
+        if game["notice_time"] < 0:
+            game["notice_time"] = 0.0
+
+        game["invincible_time"] -= step
+        if game["invincible_time"] < 0:
+            game["invincible_time"] = 0.0
+
         update_player(game, world, keys, step)
 
+        # Spawn and move bullets during the barrage phase.
         if game["phase"] == "barrage":
             if game["shot_timer"] <= TIMER_EPSILON:
                 spawn_bullets(game)
                 game["shot_timer"] += SHOT_INTERVAL
-            game["shot_timer"] -= step
 
+            game["shot_timer"] -= step
             update_bullets(game, step)
+
             if game["game_over"]:
                 return
 
+        # Subtract the time used by this step.
         game["phase_time"] -= step
         frame_time_left -= step
+
         if game["phase_time"] <= TIMER_EPSILON:
             switch_phase(game)
 
@@ -428,11 +525,20 @@ def spawn_bullets(game):
     shot_index = game["shot_index"]
 
     # Use % to wrap the index and cycle through the lanes in order.
-    from_left_y = horizontal_lanes[shot_index % len(horizontal_lanes)]
-    from_right_y = horizontal_lanes[(shot_index + 3) % len(horizontal_lanes)]
-    from_top_x = vertical_lanes[(shot_index + 1) % len(vertical_lanes)]
-    from_bottom_x = vertical_lanes[(shot_index + 4) % len(vertical_lanes)]
-
+    horizontal_count = len(horizontal_lanes)
+    vertical_count = len(vertical_lanes)
+    
+    # Choose a lane index for each direction.
+    left_index = shot_index % horizontal_count
+    right_index = (shot_index + 3) % horizontal_count
+    top_index = (shot_index + 1) % vertical_count
+    bottom_index = (shot_index + 4) % vertical_count
+    
+    # Look up the coordinate for each lane.
+    from_left_y = horizontal_lanes[left_index]
+    from_right_y = horizontal_lanes[right_index]
+    from_top_x = vertical_lanes[top_index]
+    from_bottom_x = vertical_lanes[bottom_index]
     # Each shot stores (start x, start y, x direction, y direction).
     shots = [
         (48, from_left_y, 1, 0),
@@ -462,8 +568,17 @@ def update_bullets(game, dt):
     remaining_bullets = []
     for bullet in game["bullets"]:
         # Use as much of this step as needed for the warning. Move during the time left over.
-        warning_time_used = min(dt, bullet["warning"])
-        bullet["warning"] = max(0.0, bullet["warning"] - warning_time_used)
+        # Start with the time available in this update.
+        warning_time_used = dt
+        
+        # Use only as much time as the warning still needs.
+        if bullet["warning"] < warning_time_used:
+            warning_time_used = bullet["warning"]
+        
+        # Count down the warning and keep it at or above zero.
+        bullet["warning"] = bullet["warning"] - warning_time_used
+        if bullet["warning"] < 0:
+            bullet["warning"] = 0.0
         move_time = dt - warning_time_used
 
         bullet["life"] -= move_time
@@ -474,8 +589,13 @@ def update_bullets(game, dt):
         if bullet["life"] <= 0 or not inside_room:
             continue
 
-        warning_finished = bullet["warning"] <= 0
-        player_can_take_damage = game["invincible_time"] <= 0
+        warning_finished = False
+        if bullet["warning"] <= 0:
+            warning_finished = True
+        
+        player_can_take_damage = False
+        if game["invincible_time"] <= 0:
+            player_can_take_damage = True
         if warning_finished and player_can_take_damage:
             if bullet_hits_player(bullet, game["player"]):
                 hit_player(game)
