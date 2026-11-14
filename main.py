@@ -479,6 +479,8 @@ class Player:
             distance_y = player_y - closest_y
             distance = math.sqrt(distance_x ** 2 + distance_y ** 2)
 
+         
+
             if distance < nearest_distance:
                 nearest_device = device
                 nearest_distance = distance
@@ -665,7 +667,6 @@ class Puzzle:
         return "Inspect stations A, B and C, then use the computer."
 
 
-# 7. Keyboard and mouse input
 class InputHandler:
     def __init__(self, controller):
         self.controller = controller
@@ -767,7 +768,6 @@ class InputHandler:
         return None
 
 
-# 8. Draw the current game state
 class Renderer:
     def __init__(self, controller):
         self.controller = controller
