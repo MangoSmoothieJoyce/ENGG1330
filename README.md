@@ -280,7 +280,7 @@ The game then transitions to a victory screen with an option to restart or quit.
 
 ## 8. Game State Management
 
-The game must track the following variables:
+Key progression variables include:
 
 | Variable | Initial Value | Updated When |
 |---|---|---|
