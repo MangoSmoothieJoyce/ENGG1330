@@ -362,8 +362,7 @@ The final playable version includes:
 Additional rooms, random puzzles, animations, sound effects, and advanced inventory mechanics may be considered after the core game has been completed.
 
 
-## method use
-## Engineering Lab Escape — Method List
+## Engineering Lab Escape — Selected Method List
 
 ### 1. Main Game System
 
