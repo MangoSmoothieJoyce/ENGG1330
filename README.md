@@ -273,8 +273,6 @@ The player uses the key to access the control panel and restores power.
 
 After unlocking the exit, the player approaches the door and presses E.
 
-The game then displays a victory screen with an option to restart or quit.
-
 The game then transitions to a victory screen with an option to restart or quit.
 
 ## 8. Game State Management
