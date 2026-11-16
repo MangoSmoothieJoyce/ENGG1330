@@ -381,7 +381,8 @@ Additional rooms, random puzzles, animations, sound effects, and advanced invent
 | ------------------- | ------------------------------------------ |
 | `load_map()`        | Load the laboratory tile map               |
 | `draw_map()`        | Render walls, floors, and objects          |
-| `move_player()`     | Control player movement using WASD         |
+| `update_player()`   | Convert WASD input into player movement.   |
+| `move_player()`     | Move the player and resolve collisions.    |
 
 ### 3. Object Interaction & Inventory
 
