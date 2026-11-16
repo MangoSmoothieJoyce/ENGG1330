@@ -59,6 +59,8 @@ The puzzles focus on observation, pattern recognition, and logical thinking. No 
 |---|---|
 | W / A / S / D | Move up, left, down, right |
 | E | Interact with nearby objects |
+| I | Open inventory during the Safe phase |
+| R | Restart the game during the Safe phase |
 | Left Mouse Button | Select symbols, buttons, and rotate puzzle tiles |
 | Number Keys | Enter cabinet access code |
 | Backspace | Delete a digit |
@@ -413,7 +415,6 @@ Additional rooms, random puzzles, animations, sound effects, and advanced invent
 | `len()`                     | Check sequence or code length          |
 | `range()`                   | Iterate through map tiles              |
 | `enumerate()`               | Access tile indices and values         |
-| `all()` / `any()`           | Verify puzzle and collision conditions |
 | `pygame.init()`             | Initialize Pygame                      |
 | `pygame.display.set_mode()` | Create the game window                 |
 | `pygame.event.get()`        | Process input events                   |
@@ -421,7 +422,6 @@ Additional rooms, random puzzles, animations, sound effects, and advanced invent
 | `pygame.Rect()`             | Define collision boundaries            |
 | `Rect.colliderect()`        | Detect object collisions               |
 | `Rect.collidepoint()`       | Detect mouse clicks                    |
-| `pygame.image.load()`       | Load sprites and tiles                 |
 | `pygame.draw.rect()`        | Draw basic shapes                      |
 | `Surface.blit()`            | Draw images and text                   |
 | `pygame.display.flip()`     | Refresh the screen                     |
