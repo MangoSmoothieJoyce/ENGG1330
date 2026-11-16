@@ -18,7 +18,7 @@ Generative AI used: Yes
 ## Entry
 - Member and date: Ming Yu Ye, November 2026
 - Tool and model/version: ChatGPT (GPT-6)
-- Purpose: To assist with generating the game graphics, player movement and control logic (WASD and arrow keys), interaction object handling, and debugging.
+- Purpose: To assist with generating the game graphics, player movement and control logic (WASD and arrow keys), interaction object handling, finding suitable built-in methods for the game, and debugging.
 - Substantial parts affected (files/materials): main.py, including game graphics, player controls, object interactions, and debugging of game algorithms.
 - What was kept, changed, or rejected, and how results were checked (tests or corrections): The main game algorithms were initially developed without AI. After testing revealed multiple bugs, ChatGPT was used to help identify and fix them. Each suggested fix was tested in the game before being kept. When AI generated or modified code, the reasoning behind the changes was reviewed and clarified, and comments were added to the relevant parts of the code to document the logic.
 
