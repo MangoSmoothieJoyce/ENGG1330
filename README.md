@@ -346,7 +346,7 @@ The primary challenge comes from exploration, puzzle-solving, and avoiding proje
 
 ## 11. Development Scope
 
-The initial playable version will include:
+The final playable version includes:
 
 - One complete 2D laboratory map
 - One controllable player character
