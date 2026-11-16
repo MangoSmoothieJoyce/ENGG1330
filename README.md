@@ -448,4 +448,36 @@ Additional rooms, random puzzles, animations, sound effects, and advanced invent
 | `pygame.display.flip()`     | Refresh the screen                     |
 | `pygame.time.Clock.tick()`  | Control frame rate                     |
 
+## Running the Game
 
+Course container: engg1330-project:2026-v03
+
+Run the game with: python3 main.py
+
+## Testing
+
+The game was tested through repeated playthroughs, including:
+- Correct and incorrect puzzle inputs
+- Player movement and collision
+- Projectile collisions and HP reduction
+- Safe and Barrage phase transitions
+- Cabinet and power-puzzle progression locks
+- Restart behavior
+- Final win condition
+
+## Known Limitations
+
+- Game progress is stored only during the current session.
+- Closing or restarting the game resets all progress.
+- The game requires Pygame.
+
+## Contributions
+
+- Junhyuk Jang: Map, player movement, collision system, and main game structure.
+- Ming Yu Ye: Workstation interactions, Puzzle 1, graphics and control-related implementation.
+- Yebin Lee: Cabinet system, Puzzle 2, game progression, and video/audio preparation.
+- All members contributed to testing, documentation, and final review.
+
+## Sources and Acknowledgements
+
+Generative AI assistance is disclosed separately in ai_use.md.
