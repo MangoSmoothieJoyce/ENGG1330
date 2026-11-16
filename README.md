@@ -338,7 +338,7 @@ The game is successfully completed when all of the following conditions are sati
 4. The power connection puzzle has been solved.
 5. The player interacts with the unlocked exit door.
 
-The game contains no combat, health system, or game-over penalty.
+The game includes a three-HP system during Barrage phases. The player loses one HP when hit by a projectile, and losing all three HP results in game over.
 
 The primary challenge comes from exploration and puzzle-solving.
 
