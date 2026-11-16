@@ -342,7 +342,7 @@ The game is successfully completed when all of the following conditions are sati
 
 The game includes a three-HP system during Barrage phases. The player loses one HP when hit by a projectile, and losing all three HP results in game over.
 
-The primary challenge comes from exploration and puzzle-solving.
+The primary challenge comes from exploration, puzzle-solving, and avoiding projectiles during Barrage phases.
 
 ## 11. Development Scope
 
