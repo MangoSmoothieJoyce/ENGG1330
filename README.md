@@ -232,14 +232,14 @@ The game checks whether all four wire tiles connect correctly along the required
 
 If the connections are incorrect:
 
-- The system displays: "Power Connection Failed."
+- An error message is displayed.
 - The current wire orientations remain unchanged.
 - The player can continue rotating tiles and try again.
 
 If all connections are correct:
 
 - The connected wires turn green.
-- The system displays: "Power Restored. Exit Unlocked."
+- The game confirms that power has been restored.
 - Puzzle 2 is marked as completed.
 - The laboratory exit door unlocks.
 
@@ -273,9 +273,7 @@ The player uses the key to access the control panel and restores power.
 
 After unlocking the exit, the player approaches the door and presses E.
 
-The game displays:
-
-"Congratulations! You have successfully escaped the Engineering Laboratory!"
+The game then displays a victory screen with an option to restart or quit.
 
 The game then transitions to a victory screen with an option to restart or quit.
 
