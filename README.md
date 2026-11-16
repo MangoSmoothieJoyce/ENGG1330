@@ -127,9 +127,7 @@ The game records which workstations have been inspected.
 
 When the player interacts with the main computer, a puzzle interface appears.
 
-The computer displays the following instruction:
-
-"Security Verification Required. Enter the symbols in this order: C → A → B."
+The computer instructs the player to enter the symbols in the order C → A → B.
 
 Below the instruction, four clickable symbol buttons are displayed: ★, ●, ▲ and ■.
 
