@@ -73,9 +73,7 @@ The player moves freely in four directions within the laboratory.
 
 The game uses collision detection to prevent movement through walls, laboratory furniture, and locked doors.
 
-When the player approaches an interactive object, a visual prompt appears:
-
-"Press E to interact"
+When the player approaches an interactive object, a visual prompt appears indicating that E can be pressed to interact.
 
 Pressing E opens the appropriate interaction interface.
 
