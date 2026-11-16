@@ -240,7 +240,7 @@ If all connections are correct:
 - Puzzle 2 is marked as completed.
 - The laboratory exit door unlocks.
 
-There is no time limit or maximum number of attempts.
+There is no maximum number of puzzle attempts, but puzzle interactions are only available during the Safe phase.
 
 ## 7. Game Progression
 
