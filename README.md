@@ -185,9 +185,7 @@ The obtained key and note are stored in the player's inventory.
 
 The player approaches the exit control panel and presses E.
 
-If the player does not have the Exit Control Key, the panel displays:
-
-"Access Restricted. Control Key Required."
+If the player does not have the Exit Control Key, the panel informs the player that the Control Key is required.
 
 If the player has the key, the power connection puzzle opens.
 
