@@ -380,7 +380,6 @@ Additional rooms, random puzzles, animations, sound effects, and advanced invent
 | `load_map()`        | Load the laboratory tile map               |
 | `draw_map()`        | Render walls, floors, and objects          |
 | `move_player()`     | Control player movement using WASD         |
-| `check_collision()` | Detect collisions with walls and furniture |
 
 ### 3. Object Interaction & Inventory
 
@@ -388,46 +387,26 @@ Additional rooms, random puzzles, animations, sound effects, and advanced invent
 | ---------------------- | ------------------------------------- |
 | `find_nearby_object()` | Detect nearby interactive objects     |
 | `interact_object()`    | Handle interactions when E is pressed |
-| `collect_clue()`       | Record discovered symbols             |
-| `add_item()`           | Add items to inventory                |
-| `show_inventory()`     | Display collected items and clues     |
 
 ### 4. Puzzle 1 — Symbol Sequence
 
 | Method                    | Function                                  |
 | ------------------------- | ----------------------------------------- |
-| `start_symbol_puzzle()`   | Open the computer puzzle interface        |
-| `select_symbol()`         | Record the player's symbol selection      |
 | `check_symbol_sequence()` | Validate the selected sequence            |
-| `reveal_cabinet_code()`   | Display the code after solving the puzzle |
 
 ### 5. Cabinet System
 
 | Method                 | Function                             |
 | ---------------------- | ------------------------------------ |
-| `open_keypad()`        | Display the cabinet keypad           |
-| `enter_code()`         | Handle numerical input               |
 | `check_cabinet_code()` | Validate the entered code            |
-| `unlock_cabinet()`     | Unlock the cabinet and provide items |
 
 ### 6. Puzzle 2 — Power Connection
 
 | Method                     | Function                                    |
 | -------------------------- | ------------------------------------------- |
-| `start_power_puzzle()`     | Open the power connection interface         |
-| `rotate_wire()`            | Rotate a wire tile by 90°                   |
-| `check_wire_connection()`  | Validate connections between adjacent tiles |
 | `check_power_connection()` | Verify the complete power path              |
-| `unlock_exit()`            | Unlock the laboratory exit                  |
 
-### 7. Game Completion
-
-| Method                  | Function                            |
-| ----------------------- | ----------------------------------- |
-| `check_win_condition()` | Check whether the player can escape |
-| `show_victory_screen()` | Display the victory screen          |
-
-### 8. Python Built-in Functions & Pygame Methods
+### 7. Python Built-in Functions & Pygame Methods
 
 | Built-in / Pygame API       | Usage                                  |
 | --------------------------- | -------------------------------------- |
