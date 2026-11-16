@@ -145,13 +145,13 @@ The game compares the player's selected symbol sequence with the correct sequenc
 
 If the answer is incorrect:
 
-- A message appears: "Incorrect sequence. Please try again."
+- An error message is displayed.
 - The selected sequence is cleared.
 - The player may retry without penalty.
 
 If the answer is correct:
 
-- The computer displays: "Verification Successful."
+- The computer confirms that the sequence is correct.
 - The cabinet access code, **482**, is revealed.
 - The computer authorizes the cabinet keypad.
 - Puzzle 1 is marked as completed.
@@ -166,9 +166,10 @@ The player enters the code revealed by the computer.
 
 **Correct Code:** 482
 
-If the code is incorrect, the cabinet remains locked and the game displays:
+If the code is incorrect:
 
-"Access Denied. Incorrect Code."
+- The cabinet remains locked.
+- An error message is displayed.
 
 If the code is correct:
 
