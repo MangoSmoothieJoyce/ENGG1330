@@ -10,7 +10,7 @@ Engineering Lab Escape
 - Yebin Lee
 
 ## Description
-A console adventure game where the player solves connected puzzles to escape an engineering lab.
+A 2D puzzle adventure game where the player solves connected puzzles to escape an engineering lab.
 
 ## Game Story
 The player is locked inside an engineering laboratory and must solve a series of connected puzzles to escape.
