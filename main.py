@@ -79,12 +79,18 @@ for index in range(4):
     symbolbuttons.append(buttonrect)
 
 
+# Because many classes in our game need to use this method, so we set this as global.
 def closest_point_on_rect(point_x, point_y, rect):
+    # rect.left is the left side of character
+    # rect.right is the right side of character
+    # point_x, point_y is the coordinate of objects in lab.
     if point_x < rect.left:
         closest_x = rect.left
     elif point_x > rect.right:
         closest_x = rect.right
     else:
+        # if the closest point are not at the left or right side of the character, which means that object is contacting,
+        # so we set the closest x value equals to that object's x value.
         closest_x = point_x
 
     if point_y < rect.top:
@@ -151,7 +157,7 @@ class Game:
             pygame.Rect(0, 0, tilesize, height),
             pygame.Rect(width - tilesize, 0, tilesize, height),
         ]
-
+        # We use dictionart for those objects
         objects = [
             {
                 "kind": "station", "name": "A", "label": "Station A",
@@ -480,7 +486,7 @@ class Player:
             distance = math.sqrt(distance_x ** 2 + distance_y ** 2)
 
          
-
+            # this means the character is in the boundry for interacting with that device.
             if distance < nearest_distance:
                 nearest_device = device
                 nearest_distance = distance
@@ -573,6 +579,7 @@ class Barrage:
 
         game["bullets"] = remaining_bullets
 
+        
     def bullet_hits_player(self, bullet, player):
         bullet_x = bullet["x"]
         bullet_y = bullet["y"]
@@ -582,6 +589,8 @@ class Barrage:
         distance_y = bullet_y - closest_y
         distance_squared = distance_x ** 2 + distance_y ** 2
         radius_squared = bulletradius ** 2
+
+        # if character is in the attacking boundry of that barrage, (distance_squared <= radius_squared) returns 
         return distance_squared <= radius_squared
 
     def hit_player(self, game):
