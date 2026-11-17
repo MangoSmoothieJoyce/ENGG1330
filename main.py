@@ -622,7 +622,7 @@ class Puzzle:
             self.controller.set_feedback(game, "Choose exactly three symbols first.")
         elif game["selected_symbols"] == correctsymbols:
             game["computer_solved"] = True
-            self.controller.set_feedback(game, "Verified! Cabinet code: 482. Press Esc to return.", True)
+            self.controller.set_feedback(game, "Verified! Cabinet code: " + cabinetcode + ". Press Esc to return.", True)
         else:
             game["selected_symbols"] = []
             self.controller.set_feedback(game, "Incorrect sequence. Please try again.")
